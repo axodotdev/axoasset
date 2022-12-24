@@ -1,0 +1,14 @@
+[package]
+name = "axoasset"
+description = ">o_o<"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+
+[dependencies]
+image = "0.24.5"
+mime = "0.3.16"
+reqwest = { version = "0.11.13", features = ["blocking", "json"] }
+thiserror = "1.0.37"
+toml = "0.5.9"
+url = "2.3.1"
