@@ -33,6 +33,13 @@ pub fn copy(origin_path: &str, label: &str, dist_dir: &str) -> Result<PathBuf> {
     }
 }
 
+pub fn write(asset: Asset, dist_dir: &str) -> Result<PathBuf> {
+    match asset {
+        Asset::RemoteAsset(a) => a.write(dist_dir),
+        Asset::LocalAsset(a) => a.write(dist_dir),
+    }
+}
+
 fn is_remote(origin_path: &str, label: &str) -> Result<bool> {
     if origin_path.starts_with("http") {
         match origin_path.parse() {

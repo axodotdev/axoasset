@@ -54,6 +54,19 @@ impl RemoteAsset {
         }
     }
 
+    pub fn write(mut self, dist_dir: &str) -> Result<PathBuf> {
+        let dist_path = self.dist_path(dist_dir)?;
+        let mut file = std::fs::File::create(&dist_path)?;
+        match self.response.copy_to(&mut file) {
+            Ok(_) => Ok(dist_path),
+            Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
+                asset: self.to_string(),
+                dist_path: dist_path.display().to_string(),
+                details: details.to_string(),
+            }),
+        }
+    }
+
     fn dist_path(&self, dist_dir: &str) -> Result<PathBuf> {
         let filename = self.filename()?;
         Ok(Path::new(&dist_dir).join(filename))

@@ -59,6 +59,13 @@ pub enum AxoassetError {
         details: String,
     },
 
+    #[error("failed to copy {asset} to {dist_path}: Could not find asset at provided path. Make sure your path is correct and your server is configured correctly. Details:\r{details}")]
+    RemoteAssetWriteFailed {
+        asset: String,
+        dist_path: String,
+        details: String,
+    },
+
     #[error("failed to fetch {label} at {origin_path}: Could not find asset at provided path. Make sure your path is relative to your oranda config or project manifest file. Details:\r{details}")]
     LocalAssetNotFound {
         origin_path: String,
