@@ -6,41 +6,38 @@ use crate::error::*;
 #[derive(Debug)]
 pub struct RemoteAsset {
     pub origin_path: String,
-    pub label: String,
     pub response: reqwest::blocking::Response,
 }
 
 impl fmt::Display for RemoteAsset {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} asset at path, {}, ", self.label, self.origin_path)
+        write!(f, "asset at path, {}, ", self.origin_path)
     }
 }
 
 impl RemoteAsset {
-    pub fn load(origin_path: &str, label: &str) -> Result<RemoteAsset> {
+    pub fn load(origin_path: &str) -> Result<RemoteAsset> {
         match reqwest::blocking::get(origin_path) {
             Ok(response) => Ok(RemoteAsset {
                 origin_path: origin_path.to_string(),
-                label: label.to_string(),
                 response,
             }),
             Err(details) => Err(AxoassetError::RemoteAssetRequestFailed {
                 origin_path: origin_path.to_string(),
-                label: label.to_string(),
                 details: details.to_string(),
             }),
         }
     }
 
-    pub fn copy(origin_path: &str, label: &str, dist_dir: &str) -> Result<PathBuf> {
-        match RemoteAsset::load(origin_path, label) {
+    pub fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
+        match RemoteAsset::load(origin_path) {
             Ok(mut a) => {
                 let dist_path = a.dist_path(dist_dir)?;
                 let mut file = std::fs::File::create(&dist_path)?;
                 match a.response.copy_to(&mut file) {
                     Ok(_) => Ok(dist_path),
                     Err(details) => Err(AxoassetError::RemoteAssetCopyFailed {
-                        asset: a,
+                        origin_path: a.origin_path,
                         dist_path: dist_path.display().to_string(),
                         details: details.to_string(),
                     }),
@@ -48,7 +45,6 @@ impl RemoteAsset {
             }
             Err(details) => Err(AxoassetError::RemoteAssetLoadFailed {
                 origin_path: origin_path.to_string(),
-                label: label.to_string(),
                 details: details.to_string(),
             }),
         }
