@@ -8,6 +8,12 @@ pub enum AxoassetError {
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+
+    #[error(transparent)]
+    UrlParse(#[from] url::ParseError),
+
+    #[error(transparent)]
     ReqwestHeaderParse(#[from] reqwest::header::ToStrError),
 
     #[error(transparent)]
@@ -28,8 +34,8 @@ pub enum AxoassetError {
     #[error("remote asset url, {origin_path}, did not use http or https: Please use an http or https url or a local path.")]
     RemoteAssetPathSchemeNotSupported { origin_path: String },
 
-    #[error("when fetching {asset}, the server's response mime type did not indicate an image: Please make sure the asset url is correct and that the server is properly configured")]
-    RemoteAssetNonImageMimeType { asset: String },
+    #[error("when fetching asset at {origin_path}, the server's response mime type did not indicate an image: Please make sure the asset url is correct and that the server is properly configured")]
+    RemoteAssetNonImageMimeType { origin_path: String },
 
     #[error("failed to copy asset from {origin_path} to {dist_path}: Encountered an error copying server response body to filesystem. Make sure your server is configured correctly and your destination path has the correct permissions. Details:\r{details}")]
     RemoteAssetCopyFailed {
@@ -38,14 +44,17 @@ pub enum AxoassetError {
         details: String,
     },
 
-    #[error("when fetching {asset}, the server responded with a mime type that was non supported: Please make sure the asset url is correct and that the server is properly configured")]
-    RemoteAssetMimeTypeNotSupported { asset: String, mimetype: String },
+    #[error("when fetching asset at {origin_path}, the server responded with a mime type that was non supported: Please make sure the asset url is correct and that the server is properly configured")]
+    RemoteAssetMimeTypeNotSupported {
+        origin_path: String,
+        mimetype: String,
+    },
 
-    #[error("when fetching {asset}, we could not determine an appropriate file extension based on the server response: Please make sure the asset url is correct and that the server is properly configured")]
-    RemoteAssetIndeterminateImageFormatExtension { asset: String },
+    #[error("when fetching asset at {origin_path}, we could not determine an appropriate file extension based on the server response: Please make sure the asset url is correct and that the server is properly configured")]
+    RemoteAssetIndeterminateImageFormatExtension { origin_path: String },
 
-    #[error("when fetching {asset}, the server's response did not contain a content type header: Please make sure the asset url is correct and that the server is properly configured")]
-    RemoteAssetMissingContentTypeHeader { asset: String },
+    #[error("when fetching asset at {origin_path}, the server's response did not contain a content type header: Please make sure the asset url is correct and that the server is properly configured")]
+    RemoteAssetMissingContentTypeHeader { origin_path: String },
 
     #[error("could not parse asset url, {origin_path}: Please use an http or https url or a local path. Details:\r{details}")]
     RemoteAssetPathParseError {
@@ -53,9 +62,9 @@ pub enum AxoassetError {
         details: String,
     },
 
-    #[error("failed to copy {asset} to {dist_path}: Could not find asset at provided path. Make sure your path is correct and your server is configured correctly. Details:\r{details}")]
+    #[error("failed to write asset at {origin_path} to {dist_path}: Could not find asset at provided path. Make sure your path is correct and your server is configured correctly. Details:\r{details}")]
     RemoteAssetWriteFailed {
-        asset: String,
+        origin_path: String,
         dist_path: String,
         details: String,
     },

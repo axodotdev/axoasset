@@ -11,25 +11,27 @@ pub enum Asset {
     RemoteAsset(remote::RemoteAsset),
 }
 
-pub fn load(origin_path: &str) -> Result<Asset> {
+pub async fn load(origin_path: &str) -> Result<Asset> {
     if is_remote(origin_path)? {
-        Ok(Asset::RemoteAsset(remote::RemoteAsset::load(origin_path)?))
+        Ok(Asset::RemoteAsset(
+            remote::RemoteAsset::load(origin_path).await?,
+        ))
     } else {
         Ok(Asset::LocalAsset(local::LocalAsset::load(origin_path)?))
     }
 }
 
-pub fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
+pub async fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
     if is_remote(origin_path)? {
-        remote::RemoteAsset::copy(origin_path, dist_dir)
+        remote::RemoteAsset::copy(origin_path, dist_dir).await
     } else {
         local::LocalAsset::copy(origin_path, dist_dir)
     }
 }
 
-pub fn write(asset: Asset, dist_dir: &str) -> Result<PathBuf> {
+pub async fn write(asset: Asset, dist_dir: &str) -> Result<PathBuf> {
     match asset {
-        Asset::RemoteAsset(a) => a.write(dist_dir),
+        Asset::RemoteAsset(a) => a.write(dist_dir).await,
         Asset::LocalAsset(a) => a.write(dist_dir),
     }
 }

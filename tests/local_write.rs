@@ -5,8 +5,8 @@ use std::path::Path;
 use assert_fs::prelude::*;
 use image::ImageFormat;
 
-#[test]
-fn it_writes_local_assets() {
+#[tokio::test]
+async fn it_writes_local_assets() {
     let origin = assert_fs::TempDir::new().unwrap();
     let dest = assert_fs::TempDir::new().unwrap();
     let dest_dir = Path::new(dest.to_str().unwrap());
@@ -22,7 +22,7 @@ fn it_writes_local_assets() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_asset = axoasset::load(origin_path).unwrap();
+        let loaded_asset = axoasset::load(origin_path).await.unwrap();
 
         if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
             asset.write(dest.to_str().unwrap()).unwrap();

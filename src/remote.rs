@@ -1,27 +1,26 @@
-use std::fmt;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::error::*;
 
 #[derive(Debug)]
 pub struct RemoteAsset {
+    pub filename: String,
     pub origin_path: String,
-    pub response: reqwest::blocking::Response,
-}
-
-impl fmt::Display for RemoteAsset {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "asset at path, {}, ", self.origin_path)
-    }
+    pub contents: Vec<u8>,
 }
 
 impl RemoteAsset {
-    pub fn load(origin_path: &str) -> Result<RemoteAsset> {
-        match reqwest::blocking::get(origin_path) {
-            Ok(response) => Ok(RemoteAsset {
-                origin_path: origin_path.to_string(),
-                response,
-            }),
+    pub async fn load(origin_path: &str) -> Result<RemoteAsset> {
+        match reqwest::get(origin_path).await {
+            Ok(response) => {
+                let filename = RemoteAsset::filename(origin_path, response.headers())?;
+                Ok(RemoteAsset {
+                    origin_path: origin_path.to_string(),
+                    contents: response.bytes().await?.to_vec(),
+                    filename,
+                })
+            }
             Err(details) => Err(AxoassetError::RemoteAssetRequestFailed {
                 origin_path: origin_path.to_string(),
                 details: details.to_string(),
@@ -29,19 +28,12 @@ impl RemoteAsset {
         }
     }
 
-    pub fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
-        match RemoteAsset::load(origin_path) {
-            Ok(mut a) => {
-                let dist_path = a.dist_path(dist_dir)?;
-                let mut file = std::fs::File::create(&dist_path)?;
-                match a.response.copy_to(&mut file) {
-                    Ok(_) => Ok(dist_path),
-                    Err(details) => Err(AxoassetError::RemoteAssetCopyFailed {
-                        origin_path: a.origin_path,
-                        dist_path: dist_path.display().to_string(),
-                        details: details.to_string(),
-                    }),
-                }
+    pub async fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
+        match RemoteAsset::load(origin_path).await {
+            Ok(a) => {
+                let dist_path = Path::new(dist_dir).join(a.filename);
+                fs::write(&dist_path, a.contents)?;
+                Ok(dist_path)
             }
             Err(details) => Err(AxoassetError::RemoteAssetLoadFailed {
                 origin_path: origin_path.to_string(),
@@ -50,44 +42,36 @@ impl RemoteAsset {
         }
     }
 
-    pub fn write(mut self, dist_dir: &str) -> Result<PathBuf> {
-        let dist_path = self.dist_path(dist_dir)?;
-        let mut file = std::fs::File::create(&dist_path)?;
-        match self.response.copy_to(&mut file) {
+    pub async fn write(self, dist_dir: &str) -> Result<PathBuf> {
+        let dist_path = Path::new(dist_dir).join(self.filename);
+        match fs::write(&dist_path, self.contents) {
             Ok(_) => Ok(dist_path),
             Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
-                asset: self.to_string(),
+                origin_path: self.origin_path,
                 dist_path: dist_path.display().to_string(),
                 details: details.to_string(),
             }),
         }
     }
 
-    fn dist_path(&self, dist_dir: &str) -> Result<PathBuf> {
-        let filename = self.filename()?;
-        Ok(Path::new(&dist_dir).join(filename))
-    }
-
-    fn mimetype(&self) -> Result<mime::Mime> {
-        let headers = self.response.headers();
+    fn mimetype(headers: &reqwest::header::HeaderMap, origin_path: &str) -> Result<mime::Mime> {
         match headers.get(reqwest::header::CONTENT_TYPE) {
             Some(content_type) => {
                 let mtype: mime::Mime = content_type.to_str()?.parse()?;
                 match mtype.type_() {
                     mime::IMAGE => Ok(mtype),
                     _ => Err(AxoassetError::RemoteAssetNonImageMimeType {
-                        asset: self.to_string(),
+                        origin_path: origin_path.to_string(),
                     }),
                 }
             }
             None => Err(AxoassetError::RemoteAssetMissingContentTypeHeader {
-                asset: self.to_string(),
+                origin_path: origin_path.to_string(),
             }),
         }
     }
 
-    fn extension(&self) -> Result<String> {
-        let mimetype = self.mimetype()?;
+    fn extension(mimetype: mime::Mime, origin_path: &str) -> Result<String> {
         if let Some(img_format) = image::ImageFormat::from_mime_type(&mimetype) {
             let extensions = img_format.extensions_str();
             if !extensions.is_empty() {
@@ -95,19 +79,25 @@ impl RemoteAsset {
             } else {
                 Err(
                     AxoassetError::RemoteAssetIndeterminateImageFormatExtension {
-                        asset: self.to_string(),
+                        origin_path: origin_path.to_string(),
                     },
                 )
             }
         } else {
             Err(AxoassetError::RemoteAssetMimeTypeNotSupported {
-                asset: self.to_string(),
+                origin_path: origin_path.to_string(),
                 mimetype: mimetype.to_string(),
             })
         }
     }
 
-    fn filename(&self) -> Result<String> {
-        Ok(format!("logo.{}", self.extension()?))
+    fn filename(origin_path: &str, headers: &reqwest::header::HeaderMap) -> Result<String> {
+        let filestem = url::Url::parse(origin_path)?
+            .path()
+            .to_string()
+            .replace('/', "_");
+        let extension =
+            RemoteAsset::extension(RemoteAsset::mimetype(headers, origin_path)?, origin_path)?;
+        Ok(format!("{filestem}.{extension}"))
     }
 }

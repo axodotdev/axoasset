@@ -3,8 +3,8 @@ use std::path::Path;
 
 use assert_fs::prelude::*;
 
-#[test]
-fn it_loads_local_assets() {
+#[tokio::test]
+async fn it_loads_local_assets() {
     let origin = assert_fs::TempDir::new().unwrap();
 
     let mut files = HashMap::new();
@@ -17,7 +17,7 @@ fn it_loads_local_assets() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_asset = axoasset::load(origin_path).unwrap();
+        let loaded_asset = axoasset::load(origin_path).await.unwrap();
 
         if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
             assert!(std::str::from_utf8(&asset.contents)

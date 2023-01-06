@@ -8,10 +8,12 @@ license = "MPL-2.0"
 [dependencies]
 image = "0.24.5"
 mime = "0.3.16"
-reqwest = { version = "0.11.13", features = ["blocking", "json"] }
+reqwest = { version = "0.11.13", features = ["json"] }
 thiserror = "1.0.37"
 toml = "0.5.9"
 url = "2.3.1"
 
 [dev-dependencies]
 assert_fs = "1"
+tokio = {version = "1.24", features = ["macros"]}
+wiremock = "0.5"
