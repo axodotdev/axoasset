@@ -12,13 +12,16 @@ pub struct LocalAsset {
 impl LocalAsset {
     pub fn load(origin_path: &str) -> Result<LocalAsset> {
         match Path::new(origin_path).try_exists() {
-            Ok(_) => {
-                let contents = fs::read(origin_path)?;
-                Ok(LocalAsset {
+            Ok(_) => match fs::read(origin_path) {
+                Ok(contents) => Ok(LocalAsset {
                     origin_path: origin_path.to_string(),
                     contents,
-                })
-            }
+                }),
+                Err(details) => Err(AxoassetError::LocalAssetReadFailed {
+                    origin_path: origin_path.to_string(),
+                    details: details.to_string(),
+                }),
+            },
             Err(details) => Err(AxoassetError::LocalAssetNotFound {
                 origin_path: origin_path.to_string(),
                 details: details.to_string(),

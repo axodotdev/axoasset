@@ -5,9 +5,6 @@ pub type Result<T> = std::result::Result<T, AxoassetError>;
 #[derive(Debug, Error)]
 pub enum AxoassetError {
     #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 
     #[error(transparent)]
@@ -79,6 +76,12 @@ pub enum AxoassetError {
     LocalAssetCopyFailed {
         origin_path: String,
         dist_path: String,
+        details: String,
+    },
+
+    #[error("failed to read asset from {origin_path}: An error occured while reading the asset at provided path. Make sure your path is relative to your oranda config or project manifest file. Details:\r{details}")]
+    LocalAssetReadFailed {
+        origin_path: String,
         details: String,
     },
 

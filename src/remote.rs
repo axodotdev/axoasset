@@ -15,6 +15,7 @@ impl RemoteAsset {
         match reqwest::get(origin_path).await {
             Ok(response) => {
                 let filename = RemoteAsset::filename(origin_path, response.headers())?;
+                println!("filename is: {}", filename);
                 Ok(RemoteAsset {
                     origin_path: origin_path.to_string(),
                     contents: response.bytes().await?.to_vec(),
@@ -32,8 +33,14 @@ impl RemoteAsset {
         match RemoteAsset::load(origin_path).await {
             Ok(a) => {
                 let dist_path = Path::new(dist_dir).join(a.filename);
-                fs::write(&dist_path, a.contents)?;
-                Ok(dist_path)
+                match fs::write(&dist_path, a.contents) {
+                    Ok(_) => Ok(dist_path),
+                    Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
+                        origin_path: origin_path.to_string(),
+                        dist_path: dist_path.display().to_string(),
+                        details: details.to_string(),
+                    }),
+                }
             }
             Err(details) => Err(AxoassetError::RemoteAssetLoadFailed {
                 origin_path: origin_path.to_string(),
@@ -60,6 +67,7 @@ impl RemoteAsset {
                 let mtype: mime::Mime = content_type.to_str()?.parse()?;
                 match mtype.type_() {
                     mime::IMAGE => Ok(mtype),
+                    mime::TEXT => Ok(mtype),
                     _ => Err(AxoassetError::RemoteAssetNonImageMimeType {
                         origin_path: origin_path.to_string(),
                     }),
@@ -72,6 +80,32 @@ impl RemoteAsset {
     }
 
     fn extension(mimetype: mime::Mime, origin_path: &str) -> Result<String> {
+        match mimetype.type_() {
+            mime::IMAGE => RemoteAsset::image_extension(mimetype, origin_path),
+            mime::TEXT => RemoteAsset::text_extension(mimetype, origin_path),
+            _ => Err(AxoassetError::RemoteAssetMimeTypeNotSupported {
+                origin_path: origin_path.to_string(),
+                mimetype: mimetype.to_string(),
+            }),
+        }
+    }
+
+    fn text_extension(mimetype: mime::Mime, origin_path: &str) -> Result<String> {
+        if let Some(extension) = mimetype.suffix() {
+            Ok(extension.to_string())
+        } else {
+            match mimetype.subtype() {
+                mime::PLAIN => Ok("txt".to_string()),
+                mime::CSS => Ok("css".to_string()),
+                _ => Err(AxoassetError::RemoteAssetMimeTypeNotSupported {
+                    origin_path: origin_path.to_string(),
+                    mimetype: mimetype.to_string(),
+                }),
+            }
+        }
+    }
+
+    fn image_extension(mimetype: mime::Mime, origin_path: &str) -> Result<String> {
         if let Some(img_format) = image::ImageFormat::from_mime_type(&mimetype) {
             let extensions = img_format.extensions_str();
             if !extensions.is_empty() {
@@ -92,10 +126,11 @@ impl RemoteAsset {
     }
 
     fn filename(origin_path: &str, headers: &reqwest::header::HeaderMap) -> Result<String> {
-        let filestem = url::Url::parse(origin_path)?
+        let mut filestem = url::Url::parse(origin_path)?
             .path()
             .to_string()
             .replace('/', "_");
+        filestem.remove(0);
         let extension =
             RemoteAsset::extension(RemoteAsset::mimetype(headers, origin_path)?, origin_path)?;
         Ok(format!("{filestem}.{extension}"))

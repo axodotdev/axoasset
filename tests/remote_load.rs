@@ -14,8 +14,10 @@ async fn it_loads_remote_assets() {
     assets.insert("/styles.css", "@import");
     assets.insert("/styles", "@import");
 
-    let readme_string = fs::read_to_string("./tests/assets/README.md").unwrap();
-    let styles_string = fs::read_to_string("./tests/assets/styles.css").unwrap();
+    let readme_string = fs::read_to_string("./tests/assets/README.md")
+        .expect("failed to read ./tests/assets/README.md");
+    let styles_string = fs::read_to_string("./tests/assets/styles.css")
+        .expect("failed to read ./tests/assets/styles.css");
 
     for (route, contents) in assets {
         let resp_string = if route.contains("README") {
