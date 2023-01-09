@@ -29,8 +29,6 @@ async fn it_copies_remote_assets() {
             .await;
 
         let origin_path = format!("http://{}/{}", mock_server.address(), route);
-        println!("{}", origin_path);
-        println!("{}", dest_dir.display());
         let copied_filename = axoasset::copy(&origin_path, dest.to_str().unwrap())
             .await
             .unwrap();
