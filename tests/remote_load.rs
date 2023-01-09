@@ -32,7 +32,7 @@ async fn it_loads_remote_assets() {
             .mount(&mock_server)
             .await;
 
-        let mut origin_path = mock_server.address().to_string();
+        let mut origin_path = format!("http://{}", mock_server.address());
         origin_path.push_str(route);
         let loaded_asset = axoasset::load(&origin_path).await.unwrap();
 

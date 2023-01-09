@@ -38,6 +38,7 @@ pub async fn write(asset: Asset, dist_dir: &str) -> Result<PathBuf> {
 
 fn is_remote(origin_path: &str) -> Result<bool> {
     if origin_path.starts_with("http") {
+        println!("remote asset detected");
         match origin_path.parse() {
             Ok(url) => {
                 if is_http(url) {
