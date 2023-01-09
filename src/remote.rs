@@ -131,8 +131,12 @@ impl RemoteAsset {
             .to_string()
             .replace('/', "_");
         filestem.remove(0);
-        let extension =
-            RemoteAsset::extension(RemoteAsset::mimetype(headers, origin_path)?, origin_path)?;
-        Ok(format!("{filestem}.{extension}"))
+        if filestem.contains('.') {
+            Ok(filestem)
+        } else {
+            let extension =
+                RemoteAsset::extension(RemoteAsset::mimetype(headers, origin_path)?, origin_path)?;
+            Ok(format!("{filestem}.{extension}"))
+        }
     }
 }

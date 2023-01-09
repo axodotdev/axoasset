@@ -14,21 +14,22 @@ async fn it_loads_remote_assets() {
     assets.insert("/styles.css", "@import");
     assets.insert("/styles", "@import");
 
-    let readme_string = fs::read_to_string("./tests/assets/README.md")
-        .expect("failed to read ./tests/assets/README.md");
-    let styles_string = fs::read_to_string("./tests/assets/styles.css")
-        .expect("failed to read ./tests/assets/styles.css");
-
     for (route, contents) in assets {
-        let resp_string = if route.contains("README") {
-            &readme_string
+        let response = if route.contains("README") {
+            let readme_bytes = fs::read("./tests/assets/README.md").unwrap();
+            ResponseTemplate::new(200)
+                .set_body_bytes(readme_bytes)
+                .insert_header("Content-Type", "text/plain+md")
         } else {
-            &styles_string
+            let styles_bytes = fs::read("./tests/assets/styles.css").unwrap();
+            ResponseTemplate::new(200)
+                .set_body_bytes(styles_bytes)
+                .insert_header("Content-Type", "text/css")
         };
 
         Mock::given(method("GET"))
             .and(path(route))
-            .respond_with(ResponseTemplate::new(200).set_body_string(resp_string))
+            .respond_with(response)
             .mount(&mock_server)
             .await;
 
