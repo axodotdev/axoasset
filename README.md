@@ -18,7 +18,7 @@ let assets = vec!("https://my.co/logo.png", "./profile.jpg", "README.md");
 let dest = "public";
 
 for asset in assets {
-    axoasset::copy(asset, "site assets", dest)?;
+    axoasset::copy(asset, dest)?;
 }
 ```
 
