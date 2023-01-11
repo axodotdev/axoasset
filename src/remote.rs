@@ -28,15 +28,15 @@ impl RemoteAsset {
         }
     }
 
-    pub async fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
+    pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         match RemoteAsset::load(origin_path).await {
             Ok(a) => {
-                let dist_path = Path::new(dist_dir).join(a.filename);
-                match fs::write(&dist_path, a.contents) {
-                    Ok(_) => Ok(dist_path),
+                let dest_path = Path::new(dest_dir).join(a.filename);
+                match fs::write(&dest_path, a.contents) {
+                    Ok(_) => Ok(dest_path),
                     Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
                         origin_path: origin_path.to_string(),
-                        dist_path: dist_path.display().to_string(),
+                        dest_path: dest_path.display().to_string(),
                         details: details.to_string(),
                     }),
                 }
@@ -48,13 +48,13 @@ impl RemoteAsset {
         }
     }
 
-    pub async fn write(self, dist_dir: &str) -> Result<PathBuf> {
-        let dist_path = Path::new(dist_dir).join(self.filename);
-        match fs::write(&dist_path, self.contents) {
-            Ok(_) => Ok(dist_path),
+    pub async fn write(self, dest_dir: &str) -> Result<PathBuf> {
+        let dest_path = Path::new(dest_dir).join(self.filename);
+        match fs::write(&dest_path, self.contents) {
+            Ok(_) => Ok(dest_path),
             Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
                 origin_path: self.origin_path,
-                dist_path: dist_path.display().to_string(),
+                dest_path: dest_path.display().to_string(),
                 details: details.to_string(),
             }),
         }

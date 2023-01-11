@@ -34,10 +34,10 @@ pub enum AxoassetError {
     #[error("when fetching asset at {origin_path}, the server's response mime type did not indicate an image: Please make sure the asset url is correct and that the server is properly configured")]
     RemoteAssetNonImageMimeType { origin_path: String },
 
-    #[error("failed to copy asset from {origin_path} to {dist_path}: Encountered an error copying server response body to filesystem. Make sure your server is configured correctly and your destination path has the correct permissions. Details:\r{details}")]
+    #[error("failed to copy asset from {origin_path} to {dest_path}: Encountered an error copying server response body to filesystem. Make sure your server is configured correctly and your destination path has the correct permissions. Details:\r{details}")]
     RemoteAssetCopyFailed {
         origin_path: String,
-        dist_path: String,
+        dest_path: String,
         details: String,
     },
 
@@ -59,10 +59,10 @@ pub enum AxoassetError {
         details: String,
     },
 
-    #[error("failed to write asset at {origin_path} to {dist_path}: Could not find asset at provided path. Make sure your path is correct and your server is configured correctly. Details:\r{details}")]
+    #[error("failed to write asset at {origin_path} to {dest_path}: Could not find asset at provided path. Make sure your path is correct and your server is configured correctly. Details:\r{details}")]
     RemoteAssetWriteFailed {
         origin_path: String,
-        dist_path: String,
+        dest_path: String,
         details: String,
     },
 
@@ -72,10 +72,10 @@ pub enum AxoassetError {
         details: String,
     },
 
-    #[error("failed to copy asset from {origin_path} to {dist_path}: Could not find asset at provided path. Make sure your path is relative to your oranda config or project manifest file. Details:\r{details}")]
+    #[error("failed to copy asset from {origin_path} to {dest_path}: Could not find asset at provided path. Make sure your path is relative to your oranda config or project manifest file. Details:\r{details}")]
     LocalAssetCopyFailed {
         origin_path: String,
-        dist_path: String,
+        dest_path: String,
         details: String,
     },
 
@@ -85,10 +85,10 @@ pub enum AxoassetError {
         details: String,
     },
 
-    #[error("failed to copy asset from {origin_path} to {dist_path}: Could not find asset at provided path. Make sure your path is relative to your oranda config or project manifest file. Details:\r{details}")]
+    #[error("failed to copy asset from {origin_path} to {dest_path}: Could not find asset at provided path. Make sure your path is relative to your oranda config or project manifest file. Details:\r{details}")]
     LocalAssetWriteFailed {
         origin_path: String,
-        dist_path: String,
+        dest_path: String,
         details: String,
     },
 

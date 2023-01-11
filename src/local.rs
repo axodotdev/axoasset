@@ -29,20 +29,20 @@ impl LocalAsset {
         }
     }
 
-    pub fn write(&self, dist_dir: &str) -> Result<PathBuf> {
-        let dist_path = self.dist_path(dist_dir)?;
-        match fs::write(&dist_path, &self.contents) {
-            Ok(_) => Ok(dist_path),
+    pub fn write(&self, dest_dir: &str) -> Result<PathBuf> {
+        let dest_path = self.dest_path(dest_dir)?;
+        match fs::write(&dest_path, &self.contents) {
+            Ok(_) => Ok(dest_path),
             Err(details) => Err(AxoassetError::LocalAssetWriteFailed {
                 origin_path: self.origin_path.to_string(),
-                dist_path: dist_path.display().to_string(),
+                dest_path: dest_path.display().to_string(),
                 details: details.to_string(),
             }),
         }
     }
 
-    pub fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
-        LocalAsset::load(origin_path)?.write(dist_dir)
+    pub fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
+        LocalAsset::load(origin_path)?.write(dest_dir)
     }
 
     fn filename(&self) -> Result<PathBuf> {
@@ -55,8 +55,8 @@ impl LocalAsset {
         }
     }
 
-    fn dist_path(&self, dist_dir: &str) -> Result<PathBuf> {
+    fn dest_path(&self, dest_dir: &str) -> Result<PathBuf> {
         let filename = self.filename()?;
-        Ok(Path::new(dist_dir).join(filename))
+        Ok(Path::new(dest_dir).join(filename))
     }
 }

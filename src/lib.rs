@@ -21,18 +21,18 @@ pub async fn load(origin_path: &str) -> Result<Asset> {
     }
 }
 
-pub async fn copy(origin_path: &str, dist_dir: &str) -> Result<PathBuf> {
+pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
     if is_remote(origin_path)? {
-        remote::RemoteAsset::copy(origin_path, dist_dir).await
+        remote::RemoteAsset::copy(origin_path, dest_dir).await
     } else {
-        local::LocalAsset::copy(origin_path, dist_dir)
+        local::LocalAsset::copy(origin_path, dest_dir)
     }
 }
 
-pub async fn write(asset: Asset, dist_dir: &str) -> Result<PathBuf> {
+pub async fn write(asset: Asset, dest_dir: &str) -> Result<PathBuf> {
     match asset {
-        Asset::RemoteAsset(a) => a.write(dist_dir).await,
-        Asset::LocalAsset(a) => a.write(dist_dir),
+        Asset::RemoteAsset(a) => a.write(dest_dir).await,
+        Asset::LocalAsset(a) => a.write(dest_dir),
     }
 }
 
