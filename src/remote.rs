@@ -15,7 +15,6 @@ impl RemoteAsset {
         match reqwest::get(origin_path).await {
             Ok(response) => {
                 let filename = RemoteAsset::filename(origin_path, response.headers())?;
-                println!("filename is: {}", filename);
                 Ok(RemoteAsset {
                     origin_path: origin_path.to_string(),
                     contents: response.bytes().await?.to_vec(),
