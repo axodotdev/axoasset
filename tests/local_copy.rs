@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::Path;
 
 use assert_fs::prelude::*;
@@ -8,9 +9,11 @@ async fn it_copies_local_assets() {
     let dest = assert_fs::TempDir::new().unwrap();
     let dest_dir = Path::new(dest.to_str().unwrap());
 
-    let files = vec!["README.md", "logo.png", "styles.css"];
+    let mut files = HashMap::new();
+    files.insert("README.md", "# axoasset");
+    files.insert("styles.css", "@import");
 
-    for file in files {
+    for (file, contents) in files {
         let asset = origin.child(file);
         let content = Path::new("./tests/assets").join(file);
         asset.write_file(&content).unwrap();
@@ -22,5 +25,11 @@ async fn it_copies_local_assets() {
 
         let copied_file = dest_dir.join(file);
         assert!(copied_file.exists());
+        let loaded_asset = axoasset::load(copied_file.to_str().unwrap()).await.unwrap();
+        if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
+            assert!(std::str::from_utf8(&asset.contents)
+                .unwrap()
+                .contains(contents));
+        }
     }
 }
