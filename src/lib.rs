@@ -11,36 +11,32 @@ pub enum Asset {
     RemoteAsset(remote::RemoteAsset),
 }
 
-pub fn load(origin_path: &str, label: &str) -> Result<Asset> {
-    if is_remote(origin_path, label)? {
-        Ok(Asset::RemoteAsset(remote::RemoteAsset::load(
-            origin_path,
-            label,
-        )?))
+pub async fn load(origin_path: &str) -> Result<Asset> {
+    if is_remote(origin_path)? {
+        Ok(Asset::RemoteAsset(
+            remote::RemoteAsset::load(origin_path).await?,
+        ))
     } else {
-        Ok(Asset::LocalAsset(local::LocalAsset::load(
-            origin_path,
-            label,
-        )?))
+        Ok(Asset::LocalAsset(local::LocalAsset::load(origin_path)?))
     }
 }
 
-pub fn copy(origin_path: &str, label: &str, dist_dir: &str) -> Result<PathBuf> {
-    if is_remote(origin_path, label)? {
-        remote::RemoteAsset::copy(origin_path, label, dist_dir)
+pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
+    if is_remote(origin_path)? {
+        remote::RemoteAsset::copy(origin_path, dest_dir).await
     } else {
-        local::LocalAsset::copy(origin_path, label, dist_dir)
+        local::LocalAsset::copy(origin_path, dest_dir)
     }
 }
 
-pub fn write(asset: Asset, dist_dir: &str) -> Result<PathBuf> {
+pub async fn write(asset: Asset, dest_dir: &str) -> Result<PathBuf> {
     match asset {
-        Asset::RemoteAsset(a) => a.write(dist_dir),
-        Asset::LocalAsset(a) => a.write(dist_dir),
+        Asset::RemoteAsset(a) => a.write(dest_dir).await,
+        Asset::LocalAsset(a) => a.write(dest_dir),
     }
 }
 
-fn is_remote(origin_path: &str, label: &str) -> Result<bool> {
+fn is_remote(origin_path: &str) -> Result<bool> {
     if origin_path.starts_with("http") {
         match origin_path.parse() {
             Ok(url) => {
@@ -48,13 +44,11 @@ fn is_remote(origin_path: &str, label: &str) -> Result<bool> {
                     Ok(true)
                 } else {
                     Err(AxoassetError::RemoteAssetPathSchemeNotSupported {
-                        label: label.to_string(),
                         origin_path: origin_path.to_string(),
                     })
                 }
             }
             Err(details) => Err(AxoassetError::RemoteAssetPathParseError {
-                label: label.to_string(),
                 origin_path: origin_path.to_string(),
                 details: details.to_string(),
             }),
