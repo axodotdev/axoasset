@@ -124,6 +124,18 @@ impl RemoteAsset {
         }
     }
 
+    // TODO: https://github.com/axodotdev/axoasset/issues/6
+    // TODO: https://github.com/axodotdev/axoasset/issues/9
+    // Currently, this function will take an asset's origin path, and attempt
+    // to identify if the final segment of the URL is a filename.
+    //
+    // If it does not find a filename it will drop the host from the origin
+    // url, slugify the set of the path, and then add an extension based on the
+    // Mime type in the associated response headers.
+    //
+    // A large portion of the origin path is preserved in the filename to help
+    // avoid name conflicts, but this is a half measure at best and leaves a
+    // lot of room for improvment.
     fn filename(origin_path: &str, headers: &reqwest::header::HeaderMap) -> Result<String> {
         let mut filestem = url::Url::parse(origin_path)?
             .path()
