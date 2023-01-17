@@ -4,7 +4,8 @@ pub mod error;
 pub(crate) mod local;
 pub(crate) mod remote;
 
-use error::*;
+pub use error::AxoassetError;
+use error::Result;
 
 pub enum Asset {
     LocalAsset(local::LocalAsset),
