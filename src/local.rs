@@ -29,6 +29,38 @@ impl LocalAsset {
         }
     }
 
+    pub fn load_string(origin_path: &str) -> Result<String> {
+        match Path::new(origin_path).try_exists() {
+            Ok(_) => match fs::read_to_string(origin_path) {
+                Ok(contents) => Ok(contents),
+                Err(details) => Err(AxoassetError::LocalAssetReadFailed {
+                    origin_path: origin_path.to_string(),
+                    details: details.to_string(),
+                }),
+            },
+            Err(details) => Err(AxoassetError::LocalAssetNotFound {
+                origin_path: origin_path.to_string(),
+                details: details.to_string(),
+            }),
+        }
+    }
+
+    pub fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
+        match Path::new(origin_path).try_exists() {
+            Ok(_) => match fs::read(origin_path) {
+                Ok(contents) => Ok(contents),
+                Err(details) => Err(AxoassetError::LocalAssetReadFailed {
+                    origin_path: origin_path.to_string(),
+                    details: details.to_string(),
+                }),
+            },
+            Err(details) => Err(AxoassetError::LocalAssetNotFound {
+                origin_path: origin_path.to_string(),
+                details: details.to_string(),
+            }),
+        }
+    }
+
     pub fn write(&self, dest_dir: &str) -> Result<PathBuf> {
         let dest_path = self.dest_path(dest_dir)?;
         match fs::write(&dest_path, &self.contents) {

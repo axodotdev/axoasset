@@ -22,6 +22,22 @@ pub async fn load(origin_path: &str) -> Result<Asset> {
     }
 }
 
+pub async fn load_string(origin_path: &str) -> Result<String> {
+    if is_remote(origin_path)? {
+        Ok(remote::RemoteAsset::load_string(origin_path).await?)
+    } else {
+        Ok(local::LocalAsset::load_string(origin_path)?)
+    }
+}
+
+pub async fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
+    if is_remote(origin_path)? {
+        Ok(remote::RemoteAsset::load_bytes(origin_path).await?)
+    } else {
+        Ok(local::LocalAsset::load_bytes(origin_path)?)
+    }
+}
+
 pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
     if is_remote(origin_path)? {
         remote::RemoteAsset::copy(origin_path, dest_dir).await
