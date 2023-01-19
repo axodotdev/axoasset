@@ -28,6 +28,26 @@ impl RemoteAsset {
         }
     }
 
+    pub async fn load_string(origin_path: &str) -> Result<String> {
+        match reqwest::get(origin_path).await {
+            Ok(response) => Ok(response.text().await?),
+            Err(details) => Err(AxoassetError::RemoteAssetRequestFailed {
+                origin_path: origin_path.to_string(),
+                details: details.to_string(),
+            }),
+        }
+    }
+
+    pub async fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
+        match reqwest::get(origin_path).await {
+            Ok(response) => Ok(response.bytes().await?.to_vec()),
+            Err(details) => Err(AxoassetError::RemoteAssetRequestFailed {
+                origin_path: origin_path.to_string(),
+                details: details.to_string(),
+            }),
+        }
+    }
+
     pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         match RemoteAsset::load(origin_path).await {
             Ok(a) => {
