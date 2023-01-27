@@ -10,6 +10,13 @@ pub struct LocalAsset {
 }
 
 impl LocalAsset {
+    pub fn new(origin_path: &str, contents: Vec<u8>) -> Self {
+        LocalAsset {
+            origin_path: origin_path.to_string(),
+            contents,
+        }
+    }
+
     pub fn load(origin_path: &str) -> Result<LocalAsset> {
         match Path::new(origin_path).try_exists() {
             Ok(_) => match fs::read(origin_path) {
