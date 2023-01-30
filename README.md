@@ -31,7 +31,7 @@ Licensed under either of
 
 at your option.
 
-### Contributions
+## Contributions
 
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0
@@ -40,7 +40,7 @@ conditions.
 
 If you are interested in contributing, please read our [CONTRIBUTING notes] and our [Code of Conduct].
 
-Copyright 2022 Axo Developer Co.
+**Copyright 2022 Axo Developer Co.**
 
 [CONTRIBUTING notes]: CONTRIBUTING.md
 [Code of Conduct]: CODE_OF_CONDUCT.md
