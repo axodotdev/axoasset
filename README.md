@@ -24,6 +24,23 @@ for asset in assets {
 
 ## License
 
-This software is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+Licensed under either of
+
+* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or [apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
+* MIT license ([LICENSE-MIT](LICENSE-MIT) or [opensource.org/licenses/MIT](https://opensource.org/licenses/MIT))
+
+at your option.
+
+### Contributions
+
+Unless you explicitly state otherwise, any contribution intentionally
+submitted for inclusion in the work by you, as defined in the Apache-2.0
+license, shall be dual licensed as above, without any additional terms or
+conditions.
+
+If you are interested in contributing, please read our [CONTRIBUTING notes] and our [Code of Conduct].
 
 Copyright 2022 Axo Developer Co.
+
+[CONTRIBUTING notes]: CONTRIBUTING.md
+[Code of Conduct]: CODE_OF_CONDUCT.md
