@@ -12,6 +12,19 @@ pub enum Asset {
     RemoteAsset(remote::RemoteAsset),
 }
 
+pub fn new(origin_path: &str, contents: Vec<u8>) -> Result<Asset> {
+    if is_remote(origin_path)? {
+        Err(AxoassetError::CannotCreateRemoteAsset {
+            origin_path: origin_path.to_string(),
+        })
+    } else {
+        Ok(Asset::LocalAsset(local::LocalAsset::new(
+            origin_path,
+            contents,
+        )))
+    }
+}
+
 pub async fn load(origin_path: &str) -> Result<Asset> {
     if is_remote(origin_path)? {
         Ok(Asset::RemoteAsset(

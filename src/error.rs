@@ -16,6 +16,9 @@ pub enum AxoassetError {
     #[error(transparent)]
     MimeParseParse(#[from] mime::FromStrError),
 
+    #[error("failed to create asset at {origin_path}, because {origin_path} is a remote address. Axoasset cannot create remote assets; Did you mean to create a local asset? You can do so by passing a local path.")]
+    CannotCreateRemoteAsset { origin_path: String },
+
     #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset. Make sure the url you prodived is accurate. Details:\r{details}")]
     RemoteAssetRequestFailed {
         origin_path: String,
