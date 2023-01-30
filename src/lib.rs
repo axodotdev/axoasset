@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 pub mod error;
-pub(crate) mod local;
-pub(crate) mod remote;
+pub mod local;
+pub mod remote;
 
 pub use error::AxoassetError;
 use error::Result;
