@@ -15,12 +15,13 @@ async fn it_creates_new_assets() {
             .join(file)
             .display()
             .to_string();
-        let asset = axoasset::new(&origin_path, contents.into()).unwrap();
-        axoasset::write(asset, dest.to_str().unwrap())
+        axoasset::Asset::new(&origin_path, contents.into())
+            .unwrap()
+            .write(dest.to_str().unwrap())
             .await
             .unwrap();
 
-        let loaded_asset = axoasset::load(&dest_dir).await.unwrap();
+        let loaded_asset = axoasset::Asset::load(&dest_dir).await.unwrap();
 
         if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
             assert!(std::str::from_utf8(&asset.contents)

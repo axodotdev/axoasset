@@ -37,7 +37,7 @@ async fn it_writes_remote_assets() {
 
         let mut origin_path = format!("http://{}", mock_server.address());
         origin_path.push_str(route);
-        let loaded_asset = axoasset::load(&origin_path).await.unwrap();
+        let loaded_asset = axoasset::Asset::load(&origin_path).await.unwrap();
 
         if let axoasset::Asset::RemoteAsset(asset) = loaded_asset {
             let dest = asset.write(dest.to_str().unwrap()).await.unwrap();

@@ -22,7 +22,7 @@ async fn it_writes_local_assets() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_asset = axoasset::load(origin_path).await.unwrap();
+        let loaded_asset = axoasset::Asset::load(origin_path).await.unwrap();
 
         if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
             asset.write(dest.to_str().unwrap()).unwrap();
