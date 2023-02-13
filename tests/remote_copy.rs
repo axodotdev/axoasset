@@ -29,7 +29,7 @@ async fn it_copies_remote_assets() {
             .await;
 
         let origin_path = format!("http://{}/{}", mock_server.address(), route);
-        let copied_filename = axoasset::copy(&origin_path, dest.to_str().unwrap())
+        let copied_filename = axoasset::Asset::copy(&origin_path, dest.to_str().unwrap())
             .await
             .unwrap();
         let copied_file = dest_dir.join(copied_filename);

@@ -35,7 +35,7 @@ async fn it_loads_remote_assets() {
 
         let mut origin_path = format!("http://{}", mock_server.address());
         origin_path.push_str(route);
-        let loaded_asset = axoasset::load(&origin_path).await.unwrap();
+        let loaded_asset = axoasset::Asset::load(&origin_path).await.unwrap();
 
         if let axoasset::Asset::RemoteAsset(asset) = loaded_asset {
             assert!(std::str::from_utf8(&asset.contents)
@@ -76,7 +76,7 @@ async fn it_loads_remote_assets_as_bytes() {
 
         let mut origin_path = format!("http://{}", mock_server.address());
         origin_path.push_str(route);
-        let loaded_bytes = axoasset::load_bytes(&origin_path).await.unwrap();
+        let loaded_bytes = axoasset::Asset::load_bytes(&origin_path).await.unwrap();
 
         assert!(std::str::from_utf8(&loaded_bytes)
             .unwrap()
@@ -115,7 +115,7 @@ async fn it_loads_remote_assets_as_string() {
 
         let mut origin_path = format!("http://{}", mock_server.address());
         origin_path.push_str(route);
-        let loaded_string = axoasset::load_string(&origin_path).await.unwrap();
+        let loaded_string = axoasset::Asset::load_string(&origin_path).await.unwrap();
 
         assert!(loaded_string.contains(contents));
     }
