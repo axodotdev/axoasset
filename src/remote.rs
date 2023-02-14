@@ -3,14 +3,23 @@ use std::path::{Path, PathBuf};
 
 use crate::error::*;
 
+/// A remote asset is an asset that is fetched over the network.
 #[derive(Debug)]
 pub struct RemoteAsset {
+    /// A string containing a valid filename and extension. The filename is
+    /// determined by the origin path and the content-type headers from the
+    /// server response.
     pub filename: String,
+    /// A string containing a http or https URL pointing to the asset. This does
+    /// not need to be `https://origin.com/myfile.ext` as filename is determined by
+    /// content-type headers in the server response.
     pub origin_path: String,
+    /// The contents of the asset as a vector of bytes
     pub contents: Vec<u8>,
 }
 
 impl RemoteAsset {
+    /// Loads an asset from a URL and returns a RemoteAsset struct.
     pub async fn load(origin_path: &str) -> Result<RemoteAsset> {
         match reqwest::get(origin_path).await {
             Ok(response) => {
@@ -28,6 +37,7 @@ impl RemoteAsset {
         }
     }
 
+    /// Loads an asset from a URL and returns a String of the asset's contents.
     pub async fn load_string(origin_path: &str) -> Result<String> {
         match reqwest::get(origin_path).await {
             Ok(response) => Ok(response.text().await?),
@@ -38,6 +48,7 @@ impl RemoteAsset {
         }
     }
 
+    /// Loads an asset from a URL and returns a vector of bytes of the asset's contents.
     pub async fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
         match reqwest::get(origin_path).await {
             Ok(response) => Ok(response.bytes().await?.to_vec()),
@@ -48,6 +59,7 @@ impl RemoteAsset {
         }
     }
 
+    /// Copies an asset to the local filesystem.
     pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         match RemoteAsset::load(origin_path).await {
             Ok(a) => {
@@ -68,6 +80,7 @@ impl RemoteAsset {
         }
     }
 
+    /// Writes an asset to the local filesystem
     pub async fn write(self, dest_dir: &str) -> Result<PathBuf> {
         let dest_path = Path::new(dest_dir).join(self.filename);
         match fs::write(&dest_path, self.contents) {

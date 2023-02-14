@@ -1,3 +1,14 @@
+#![deny(missing_docs)]
+
+//! # axoasset
+//! > 📮 load, write, and copy remote and local assets
+//!
+//! this library is a utility focused on managing both local (filesystem) assets
+//! and remote (via http/https) assets. the bulk of the logic is not terribly
+//! interesting or uniquely engineered; the purpose this library is primarily
+//! to unify and co-locate the logic to make debugging simpler and error handling
+//! more consistent and comprehensive.
+
 use std::path::PathBuf;
 
 pub(crate) mod error;
@@ -9,12 +20,19 @@ use error::Result;
 pub use local::LocalAsset;
 pub use remote::RemoteAsset;
 
+/// An asset can either be a local asset, which is designated by a path on the
+/// local file system, or a remote asset, which is designated by an http or
+/// https url.
 pub enum Asset {
+    /// An asset is a local asset if it is located on the local filesystem
     LocalAsset(LocalAsset),
+    /// An asset is a remote asset if it is located at a http or https URL
     RemoteAsset(RemoteAsset),
 }
 
 impl Asset {
+    /// Creates a new local asset. Does not write to filesystem. Will fail if
+    /// passed a URL.
     pub fn new(origin_path: &str, contents: Vec<u8>) -> Result<Asset> {
         if is_remote(origin_path)? {
             Err(AxoassetError::CannotCreateRemoteAsset {
@@ -25,6 +43,8 @@ impl Asset {
         }
     }
 
+    /// Loads an asset, either locally or remotely, returning an Asset enum
+    /// variant containing the contents as bytes.
     pub async fn load(origin_path: &str) -> Result<Asset> {
         if is_remote(origin_path)? {
             Ok(Asset::RemoteAsset(RemoteAsset::load(origin_path).await?))
@@ -33,6 +53,7 @@ impl Asset {
         }
     }
 
+    /// Loads an asset, returning its contents as a String.
     pub async fn load_string(origin_path: &str) -> Result<String> {
         if is_remote(origin_path)? {
             Ok(RemoteAsset::load_string(origin_path).await?)
@@ -41,6 +62,7 @@ impl Asset {
         }
     }
 
+    /// Loads an asset, returning its contents as a vector of bytes.
     pub async fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
         if is_remote(origin_path)? {
             Ok(RemoteAsset::load_bytes(origin_path).await?)
@@ -49,6 +71,8 @@ impl Asset {
         }
     }
 
+    /// Copies an asset, returning the path to the copy destination on the
+    /// local filesystem.
     pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         if is_remote(origin_path)? {
             RemoteAsset::copy(origin_path, dest_dir).await
@@ -57,6 +81,8 @@ impl Asset {
         }
     }
 
+    /// Writes an asset, returning the path to the write destination on the
+    /// local filesystem.
     pub async fn write(self, dest_dir: &str) -> Result<PathBuf> {
         match self {
             Asset::RemoteAsset(a) => a.write(dest_dir).await,
@@ -64,6 +90,7 @@ impl Asset {
         }
     }
 }
+
 fn is_remote(origin_path: &str) -> Result<bool> {
     if origin_path.starts_with("http") {
         match origin_path.parse() {

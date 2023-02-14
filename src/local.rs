@@ -3,13 +3,21 @@ use std::path::{Path, PathBuf};
 
 use crate::error::*;
 
+/// A local asset contains a path on the local filesystem and its contents
 #[derive(Debug)]
 pub struct LocalAsset {
+    /// A string representing a path on the local filesystem, where the asset
+    /// originated. For a new asset, this will be the path you want the asset
+    /// to be written to. This path is how the filename is determined for all
+    /// asset operations.
     pub origin_path: String,
+    /// The contents of the asset as a vector of bytes.
     pub contents: Vec<u8>,
 }
 
 impl LocalAsset {
+    /// A new asset is created with a path on the local filesystem and a
+    /// vector of bytes representing its contents
     pub fn new(origin_path: &str, contents: Vec<u8>) -> Self {
         LocalAsset {
             origin_path: origin_path.to_string(),
@@ -17,6 +25,8 @@ impl LocalAsset {
         }
     }
 
+    /// Loads an asset from a path on the local filesystem, returning a
+    /// LocalAsset struct
     pub fn load(origin_path: &str) -> Result<LocalAsset> {
         match Path::new(origin_path).try_exists() {
             Ok(_) => match fs::read(origin_path) {
@@ -36,6 +46,8 @@ impl LocalAsset {
         }
     }
 
+    /// Loads an asset from a path on the local filesystem, returning a
+    /// string of its contents
     pub fn load_string(origin_path: &str) -> Result<String> {
         match Path::new(origin_path).try_exists() {
             Ok(_) => match fs::read_to_string(origin_path) {
@@ -52,6 +64,8 @@ impl LocalAsset {
         }
     }
 
+    /// Loads an asset from a path on the local filesystem, returning a
+    /// vector of bytes of its contents
     pub fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
         match Path::new(origin_path).try_exists() {
             Ok(_) => match fs::read(origin_path) {
@@ -68,6 +82,8 @@ impl LocalAsset {
         }
     }
 
+    /// Writes an asset to a path on the local filesystem, determines the
+    /// filename from the origin path
     pub fn write(&self, dest_dir: &str) -> Result<PathBuf> {
         let dest_path = self.dest_path(dest_dir)?;
         match fs::write(&dest_path, &self.contents) {
@@ -80,6 +96,7 @@ impl LocalAsset {
         }
     }
 
+    /// Copies an asset from one location on the local filesystem to another
     pub fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         LocalAsset::load(origin_path)?.write(dest_dir)
     }
