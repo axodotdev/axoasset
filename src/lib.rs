@@ -14,11 +14,15 @@ use std::path::PathBuf;
 pub(crate) mod error;
 pub(crate) mod local;
 pub(crate) mod remote;
+pub(crate) mod source;
+pub(crate) mod spanned;
 
 pub use error::AxoassetError;
 use error::Result;
 pub use local::LocalAsset;
 pub use remote::RemoteAsset;
+pub use source::SourceFile;
+pub use spanned::Spanned;
 
 /// An asset can either be a local asset, which is designated by a path on the
 /// local file system, or a remote asset, which is designated by an http or

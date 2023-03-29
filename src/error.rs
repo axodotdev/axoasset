@@ -227,4 +227,57 @@ pub enum AxoassetError {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
     },
+    /// This error indicates we ran `std::env::current_dir` and somehow got an error.
+    #[error("Failed to get the current working directory")]
+    CurrentDir {
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+    /// This error indicates we failed to convert a Path/PathBuf to a Utf8Path/Utf8PathBuf
+    #[error("This path isn't utf8: {path:?}")]
+    Utf8Path {
+        /// The problematic path
+        path: std::path::PathBuf,
+    },
+    #[error("Failed to find {desired_filename} in an ancestor of {start_dir}")]
+    /// This error indicates we failed to find the desired file in an ancestor of the search dir.
+    SearchFailed {
+        /// The dir we started the search in
+        start_dir: camino::Utf8PathBuf,
+        /// The filename we were searching for
+        desired_filename: String,
+    },
+
+    /// This error indicates we tried to deserialize some JSON with serde_json
+    /// but failed.
+    #[cfg(feature = "json-serde")]
+    #[error("failed to parse JSON")]
+    Json {
+        /// The SourceFile we were try to parse
+        #[source_code]
+        source: crate::SourceFile,
+        /// The range the error was found on
+        #[label]
+        span: miette::SourceSpan,
+        /// Details of the error
+        #[source]
+        details: serde_json::Error,
+    },
+
+    /// This error indicates we tried to deserialize some TOML with toml-rs (serde)
+    /// but failed.
+    #[cfg(feature = "toml-serde")]
+    #[error("failed to parse TOML")]
+    Toml {
+        /// The SourceFile we were try to parse
+        #[source_code]
+        source: crate::SourceFile,
+        /// The range the error was found on
+        #[label]
+        span: miette::SourceSpan,
+        /// Details of the error
+        #[source]
+        details: toml::de::Error,
+    },
 }

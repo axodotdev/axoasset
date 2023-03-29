@@ -1,6 +1,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use camino::{Utf8Path, Utf8PathBuf};
+
 use crate::error::*;
 
 /// A local asset contains a path on the local filesystem and its contents
@@ -99,6 +101,51 @@ impl LocalAsset {
     /// Copies an asset from one location on the local filesystem to another
     pub fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         LocalAsset::load(origin_path)?.write(dest_dir)
+    }
+
+    /// Get the current working directory
+    pub fn current_dir() -> Result<Utf8PathBuf> {
+        let cur_dir =
+            std::env::current_dir().map_err(|details| AxoassetError::CurrentDir { details })?;
+        let cur_dir = Utf8PathBuf::from_path_buf(cur_dir)
+            .map_err(|details| AxoassetError::Utf8Path { path: details })?;
+        Ok(cur_dir)
+    }
+
+    /// Find a desired file in the provided dir or an ancestor of it.
+    ///
+    /// On success returns the path to the found file.
+    pub fn search_ancestors<'a>(
+        start_dir: impl Into<&'a Utf8Path>,
+        desired_filename: &str,
+    ) -> Result<Utf8PathBuf> {
+        let start_dir = start_dir.into();
+        // We want a proper absolute path so we can compare paths to workspace roots easily.
+        //
+        // Also if someone starts the path with ./ we should trim that to avoid weirdness.
+        // Maybe we should be using proper `canonicalize` but then we'd need to canonicalize
+        // every path we get from random APIs to be consistent and that's a whole mess of its own!
+        let start_dir = if let Ok(clean_dir) = start_dir.strip_prefix("./") {
+            clean_dir.to_owned()
+        } else {
+            start_dir.to_owned()
+        };
+        let start_dir = if start_dir.is_relative() {
+            let current_dir = LocalAsset::current_dir()?;
+            current_dir.join(start_dir)
+        } else {
+            start_dir
+        };
+        for dir_path in start_dir.ancestors() {
+            let file_path = dir_path.join(desired_filename);
+            if file_path.is_file() {
+                return Ok(file_path);
+            }
+        }
+        Err(AxoassetError::SearchFailed {
+            start_dir,
+            desired_filename: desired_filename.to_owned(),
+        })
     }
 
     fn filename(&self) -> Result<PathBuf> {
