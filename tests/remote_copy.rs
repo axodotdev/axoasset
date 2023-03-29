@@ -1,3 +1,5 @@
+#![cfg(feature = "remote")]
+
 use std::fs;
 use std::path::Path;
 
