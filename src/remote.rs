@@ -32,7 +32,7 @@ impl RemoteAsset {
             }
             Err(details) => Err(AxoassetError::RemoteAssetRequestFailed {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }
@@ -43,7 +43,7 @@ impl RemoteAsset {
             Ok(response) => Ok(response.text().await?),
             Err(details) => Err(AxoassetError::RemoteAssetRequestFailed {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }
@@ -54,7 +54,7 @@ impl RemoteAsset {
             Ok(response) => Ok(response.bytes().await?.to_vec()),
             Err(details) => Err(AxoassetError::RemoteAssetRequestFailed {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }
@@ -69,13 +69,13 @@ impl RemoteAsset {
                     Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
                         origin_path: origin_path.to_string(),
                         dest_path: dest_path.display().to_string(),
-                        details: details.to_string(),
+                        details,
                     }),
                 }
             }
             Err(details) => Err(AxoassetError::RemoteAssetLoadFailed {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details: Box::new(details),
             }),
         }
     }
@@ -88,7 +88,7 @@ impl RemoteAsset {
             Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
                 origin_path: self.origin_path,
                 dest_path: dest_path.display().to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }
