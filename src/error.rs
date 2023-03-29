@@ -42,7 +42,7 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to fetch a remote asset.
     #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]
-    #[diagnostic(help("Make sure the url you prodived is accurate."))]
+    #[diagnostic(help("Make sure the url you provided is accurate."))]
     RemoteAssetRequestFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -53,6 +53,7 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to load a remote asset.
     #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]
+    #[diagnostic(help("Make sure the url you provided is accurate."))]
     RemoteAssetLoadFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -98,7 +99,9 @@ pub enum AxoassetError {
     /// This error indicates that the mime type of the requested remote asset
     /// was of a type that axoasset does not support.
     #[error("when fetching asset at {origin_path}, the server responded with a mime type that was non supported")]
-    #[diagnostic(help("Please make sure the asset url is correct and that the server is properly configured"))]
+    #[diagnostic(help(
+        "Please make sure the asset url is correct and that the server is properly configured"
+    ))]
     RemoteAssetMimeTypeNotSupported {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -110,7 +113,9 @@ pub enum AxoassetError {
     /// axoasset could not determine what file extenstion to use for the
     /// received format.
     #[error("when fetching asset at {origin_path}, we could not determine an appropriate file extension based on the server response")]
-    #[diagnostic(help("Please make sure the asset url is correct and that the server is properly configured"))]
+    #[diagnostic(help(
+        "Please make sure the asset url is correct and that the server is properly configured"
+    ))]
     RemoteAssetIndeterminateImageFormatExtension {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -120,7 +125,9 @@ pub enum AxoassetError {
     /// did not include a content-type header. Axoasset needs the content-type
     /// header to determine what type of file the asset contains.
     #[error("when fetching asset at {origin_path}, the server's response did not contain a content type header")]
-    #[diagnostic(help("Please make sure the asset url is correct and that the server is properly configured"))]
+    #[diagnostic(help(
+        "Please make sure the asset url is correct and that the server is properly configured"
+    ))]
     RemoteAssetMissingContentTypeHeader {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -155,7 +162,9 @@ pub enum AxoassetError {
     /// This error indicates that axoasset failed to fetch a local asset at the
     /// provided path.
     #[error("failed to fetch asset at {origin_path}: Could not find asset at provided path.")]
-    #[diagnostic(help("Make sure your path is relative to your oranda config or project manifest file."))]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
     LocalAssetNotFound {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -166,7 +175,9 @@ pub enum AxoassetError {
 
     /// This error inidcates that axoasset failed to copy a local asset.
     #[error("failed to copy asset from {origin_path} to {dest_path}")]
-    #[diagnostic(help("Make sure your path is relative to your oranda config or project manifest file."))]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
     LocalAssetCopyFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -180,7 +191,9 @@ pub enum AxoassetError {
     /// This error indicates that axoasset failed to read a local asset at the
     /// provided path.
     #[error("failed to read asset from {origin_path}")]
-    #[diagnostic(help("Make sure your path is relative to your oranda config or project manifest file."))]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
     LocalAssetReadFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -191,7 +204,9 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to write a local asset.
     #[error("failed to write asset from {origin_path} to {dest_path}.")]
-    #[diagnostic(help("Make sure your path is relative to your oranda config or project manifest file."))]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
     LocalAssetWriteFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -205,7 +220,9 @@ pub enum AxoassetError {
     /// This error indicates that axoasset could not determine the filename for
     /// a local asset.
     #[error("could not determine file name for asset at {origin_path}")]
-    #[diagnostic(help("Make sure your path is relative to your oranda config or project manifest file."))]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
     LocalAssetMissingFilename {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
