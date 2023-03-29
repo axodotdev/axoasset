@@ -43,7 +43,7 @@ impl SourceFile {
     }
 
     #[cfg(feature = "remote")]
-    /// SourceFile equivalent of [`RemoteAsset::load`][]
+    /// SourceFile equivalent of [`crate::RemoteAsset::load`][]
     pub async fn load_remote(origin_path: &str) -> Result<SourceFile> {
         let source = crate::RemoteAsset::load_string(origin_path).await?;
         Ok(SourceFile {
