@@ -23,6 +23,7 @@ pub use remote::RemoteAsset;
 /// An asset can either be a local asset, which is designated by a path on the
 /// local file system, or a remote asset, which is designated by an http or
 /// https url.
+#[derive(Debug)]
 pub enum Asset {
     /// An asset is a local asset if it is located on the local filesystem
     LocalAsset(LocalAsset),
