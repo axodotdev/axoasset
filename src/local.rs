@@ -36,12 +36,12 @@ impl LocalAsset {
                 }),
                 Err(details) => Err(AxoassetError::LocalAssetReadFailed {
                     origin_path: origin_path.to_string(),
-                    details: details.to_string(),
+                    details,
                 }),
             },
             Err(details) => Err(AxoassetError::LocalAssetNotFound {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }
@@ -54,12 +54,12 @@ impl LocalAsset {
                 Ok(contents) => Ok(contents),
                 Err(details) => Err(AxoassetError::LocalAssetReadFailed {
                     origin_path: origin_path.to_string(),
-                    details: details.to_string(),
+                    details,
                 }),
             },
             Err(details) => Err(AxoassetError::LocalAssetNotFound {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }
@@ -72,12 +72,12 @@ impl LocalAsset {
                 Ok(contents) => Ok(contents),
                 Err(details) => Err(AxoassetError::LocalAssetReadFailed {
                     origin_path: origin_path.to_string(),
-                    details: details.to_string(),
+                    details,
                 }),
             },
             Err(details) => Err(AxoassetError::LocalAssetNotFound {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }
@@ -91,7 +91,7 @@ impl LocalAsset {
             Err(details) => Err(AxoassetError::LocalAssetWriteFailed {
                 origin_path: self.origin_path.to_string(),
                 dest_path: dest_path.display().to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     }

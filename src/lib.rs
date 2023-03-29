@@ -105,7 +105,7 @@ fn is_remote(origin_path: &str) -> Result<bool> {
             }
             Err(details) => Err(AxoassetError::RemoteAssetPathParseError {
                 origin_path: origin_path.to_string(),
-                details: details.to_string(),
+                details,
             }),
         }
     } else {
