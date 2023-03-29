@@ -4,7 +4,7 @@ use std::sync::Arc;
 use camino::Utf8Path;
 use miette::{MietteSpanContents, SourceCode, SourceSpan};
 
-use crate::{error::*, Asset, LocalAsset, RemoteAsset};
+use crate::{error::*, Asset, LocalAsset};
 
 /// The inner contents of a [`SourceFile`][].
 #[derive(Eq, PartialEq)]
@@ -42,9 +42,10 @@ impl SourceFile {
         }
     }
 
+    #[cfg(feature = "remote")]
     /// SourceFile equivalent of [`RemoteAsset::load`][]
     pub async fn load_remote(origin_path: &str) -> Result<SourceFile> {
-        let source = RemoteAsset::load_string(origin_path).await?;
+        let source = crate::RemoteAsset::load_string(origin_path).await?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
                 name: origin_path.to_owned(),

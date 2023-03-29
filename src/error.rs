@@ -10,6 +10,7 @@ pub enum AxoassetError {
     /// Long-term the goal is to eliminate this error variant in favor of more
     /// specific error variants.
     #[error(transparent)]
+    #[cfg(feature = "remote")]
     Reqwest(#[from] reqwest::Error),
 
     /// This error is a transparent error forwarded from the URL library. This
@@ -22,6 +23,7 @@ pub enum AxoassetError {
     /// This error indicates that the received headers were not able to be
     /// parsed into a string, which means they may be corrupted in some way.
     #[error(transparent)]
+    #[cfg(feature = "remote")]
     ReqwestHeaderParse(#[from] reqwest::header::ToStrError),
 
     /// This error is a transparent error forwarded from the mime library.
@@ -43,6 +45,7 @@ pub enum AxoassetError {
     /// This error indicates that axoasset failed to fetch a remote asset.
     #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]
     #[diagnostic(help("Make sure the url you provided is accurate."))]
+    #[cfg(feature = "remote")]
     RemoteAssetRequestFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,

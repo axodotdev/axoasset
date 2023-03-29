@@ -1,3 +1,5 @@
+#![cfg(feature = "remote")]
+
 use std::collections::HashMap;
 use std::fs;
 

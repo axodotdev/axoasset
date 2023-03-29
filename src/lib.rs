@@ -13,6 +13,7 @@ use std::path::PathBuf;
 
 pub(crate) mod error;
 pub(crate) mod local;
+#[cfg(feature = "remote")]
 pub(crate) mod remote;
 pub(crate) mod source;
 pub(crate) mod spanned;
@@ -20,6 +21,7 @@ pub(crate) mod spanned;
 pub use error::AxoassetError;
 use error::Result;
 pub use local::LocalAsset;
+#[cfg(feature = "remote")]
 pub use remote::RemoteAsset;
 pub use source::SourceFile;
 pub use spanned::Spanned;
@@ -32,6 +34,7 @@ pub enum Asset {
     /// An asset is a local asset if it is located on the local filesystem
     LocalAsset(LocalAsset),
     /// An asset is a remote asset if it is located at a http or https URL
+    #[cfg(feature = "remote")]
     RemoteAsset(RemoteAsset),
 }
 
@@ -50,46 +53,48 @@ impl Asset {
 
     /// Loads an asset, either locally or remotely, returning an Asset enum
     /// variant containing the contents as bytes.
+
     pub async fn load(origin_path: &str) -> Result<Asset> {
+        #[cfg(feature = "remote")]
         if is_remote(origin_path)? {
-            Ok(Asset::RemoteAsset(RemoteAsset::load(origin_path).await?))
-        } else {
-            Ok(Asset::LocalAsset(LocalAsset::load(origin_path)?))
+            return Ok(Asset::RemoteAsset(RemoteAsset::load(origin_path).await?));
         }
+        Ok(Asset::LocalAsset(LocalAsset::load(origin_path)?))
     }
 
     /// Loads an asset, returning its contents as a String.
     pub async fn load_string(origin_path: &str) -> Result<String> {
+        #[cfg(feature = "remote")]
         if is_remote(origin_path)? {
-            Ok(RemoteAsset::load_string(origin_path).await?)
-        } else {
-            Ok(LocalAsset::load_string(origin_path)?)
+            return RemoteAsset::load_string(origin_path).await;
         }
+        LocalAsset::load_string(origin_path)
     }
 
     /// Loads an asset, returning its contents as a vector of bytes.
     pub async fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
+        #[cfg(feature = "remote")]
         if is_remote(origin_path)? {
-            Ok(RemoteAsset::load_bytes(origin_path).await?)
-        } else {
-            Ok(LocalAsset::load_bytes(origin_path)?)
+            return RemoteAsset::load_bytes(origin_path).await;
         }
+        LocalAsset::load_bytes(origin_path)
     }
 
     /// Copies an asset, returning the path to the copy destination on the
     /// local filesystem.
     pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
+        #[cfg(feature = "remote")]
         if is_remote(origin_path)? {
-            RemoteAsset::copy(origin_path, dest_dir).await
-        } else {
-            LocalAsset::copy(origin_path, dest_dir)
+            return RemoteAsset::copy(origin_path, dest_dir).await;
         }
+        LocalAsset::copy(origin_path, dest_dir)
     }
 
     /// Writes an asset, returning the path to the write destination on the
     /// local filesystem.
     pub async fn write(self, dest_dir: &str) -> Result<PathBuf> {
         match self {
+            #[cfg(feature = "remote")]
             Asset::RemoteAsset(a) => a.write(dest_dir).await,
             Asset::LocalAsset(a) => a.write(dest_dir),
         }
