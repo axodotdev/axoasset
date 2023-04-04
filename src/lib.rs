@@ -47,13 +47,12 @@ impl Asset {
                 origin_path: origin_path.to_string(),
             })
         } else {
-            Ok(Asset::LocalAsset(LocalAsset::new(origin_path, contents)))
+            Ok(Asset::LocalAsset(LocalAsset::new(origin_path, contents)?))
         }
     }
 
     /// Loads an asset, either locally or remotely, returning an Asset enum
     /// variant containing the contents as bytes.
-
     pub async fn load(origin_path: &str) -> Result<Asset> {
         #[cfg(feature = "remote")]
         if is_remote(origin_path)? {

@@ -4,13 +4,15 @@ use std::sync::Arc;
 use camino::Utf8Path;
 use miette::{MietteSpanContents, SourceCode, SourceSpan};
 
-use crate::{error::*, Asset, LocalAsset};
+use crate::{error::*, LocalAsset, RemoteAsset};
 
 /// The inner contents of a [`SourceFile`][].
 #[derive(Eq, PartialEq)]
 struct SourceFileInner {
-    /// "Name" of the file (this can be a path if you want)
-    name: String,
+    /// "Name" of the file
+    filename: String,
+    /// Origin path of the file
+    origin_path: String,
     /// Contents of the file
     contents: String,
 }
@@ -29,17 +31,19 @@ pub struct SourceFile {
 
 impl SourceFile {
     /// Create an empty SourceFile with the given name
-    pub fn new_empty(name: &str) -> Self {
-        Self::new(name, String::new())
+    pub fn new_empty(origin_path: &str) -> Result<Self> {
+        Self::new(origin_path, String::new())
     }
+
     /// Create a new source file with the given name and contents.
-    pub fn new(name: &str, contents: String) -> Self {
-        SourceFile {
+    pub fn new(origin_path: &str, contents: String) -> Result<Self> {
+        Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                name: name.to_owned(),
+                filename: LocalAsset::filename(origin_path)?,
+                origin_path: origin_path.to_owned(),
                 contents,
             }),
-        }
+        })
     }
 
     #[cfg(feature = "remote")]
@@ -48,7 +52,8 @@ impl SourceFile {
         let contents = crate::RemoteAsset::load_string(origin_path).await?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                name: origin_path.to_owned(),
+                filename: RemoteAsset::load(origin_path).await?.filename,
+                origin_path: origin_path.to_owned(),
                 contents,
             }),
         })
@@ -60,18 +65,8 @@ impl SourceFile {
         let contents = LocalAsset::load_string(origin_path.as_str())?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                name: origin_path.to_string(),
-                contents,
-            }),
-        })
-    }
-
-    /// SourceFile equivalent of [`Asset::load`][]
-    pub async fn load(origin_path: &str) -> Result<SourceFile> {
-        let contents = Asset::load_string(origin_path).await?;
-        Ok(SourceFile {
-            inner: Arc::new(SourceFileInner {
-                name: origin_path.to_owned(),
+                filename: LocalAsset::filename(origin_path.as_str())?,
+                origin_path: origin_path.to_string(),
                 contents,
             }),
         })
@@ -107,10 +102,16 @@ impl SourceFile {
         Ok(toml)
     }
 
-    /// Get the name of a SourceFile
-    pub fn name(&self) -> &str {
-        &self.inner.name
+    /// Get the filename of a SourceFile
+    pub fn filename(&self) -> &str {
+        &self.inner.filename
     }
+
+    /// Get the origin_path of a SourceFile
+    pub fn origin_path(&self) -> &str {
+        &self.inner.origin_path
+    }
+
     /// Get the contents of a SourceFile
     pub fn contents(&self) -> &str {
         &self.inner.contents
@@ -149,11 +150,11 @@ impl SourceCode for SourceFile {
         context_lines_before: usize,
         context_lines_after: usize,
     ) -> std::result::Result<Box<dyn miette::SpanContents<'a> + 'a>, miette::MietteError> {
-        let contents = self
-            .contents()
-            .read_span(span, context_lines_before, context_lines_after)?;
+        let contents =
+            self.contents()
+                .read_span(span, context_lines_before, context_lines_after)?;
         Ok(Box::new(MietteSpanContents::new_named(
-            self.name().to_owned(),
+            self.origin_path().to_owned(),
             contents.data(),
             *contents.span(),
             contents.line(),
@@ -166,7 +167,7 @@ impl SourceCode for SourceFile {
 impl Debug for SourceFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SourceFile")
-            .field("name", &self.name())
+            .field("origin_path", &self.origin_path())
             .field("contents", &self.contents())
             .finish()
     }
