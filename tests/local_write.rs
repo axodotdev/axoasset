@@ -7,6 +7,22 @@ use std::path::Path;
 use assert_fs::prelude::*;
 use image::ImageFormat;
 
+#[test]
+fn it_writes_a_new_file_from_string() {
+    let dest = assert_fs::TempDir::new().unwrap();
+    let dest_dir = Path::new(dest.to_str().unwrap());
+
+    let filename = "contents.txt";
+    let contents = "CONTENTS";
+    axoasset::LocalAsset::write_new(contents, filename, &dest_dir.display().to_string()).unwrap();
+    let written_file = dest_dir.join(filename);
+    assert!(written_file.exists());
+
+    let loaded_contents =
+        axoasset::LocalAsset::load_string(&written_file.display().to_string()).unwrap();
+    assert!(loaded_contents.contains(contents));
+}
+
 #[tokio::test]
 async fn it_writes_local_assets() {
     let origin = assert_fs::TempDir::new().unwrap();
