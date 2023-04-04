@@ -98,6 +98,19 @@ impl LocalAsset {
         }
     }
 
+    /// Writes an asset to a path on the local filesystem, determines the
+    /// filename from the origin path
+    pub fn write_new(contents: &str, filename: &str, dest_dir: &str) -> Result<PathBuf> {
+        let dest_path = Path::new(dest_dir).join(filename);
+        match fs::write(&dest_path, contents) {
+            Ok(_) => Ok(dest_path),
+            Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            }),
+        }
+    }
+
     /// Copies an asset from one location on the local filesystem to another
     pub fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         LocalAsset::load(origin_path)?.write(dest_dir)

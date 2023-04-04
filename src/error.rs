@@ -220,6 +220,19 @@ pub enum AxoassetError {
         details: std::io::Error,
     },
 
+    /// This error indicates that axoasset failed to write a new asset
+    #[error("failed to write a new asset to {dest_path}.")]
+    #[diagnostic(help(
+        "Make sure your destination path is relative to your oranda config or project manifest file."
+    ))]
+    LocalAssetWriteNewFailed {
+        /// The path where the asset was being written to
+        dest_path: String,
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+
     /// This error indicates that axoasset could not determine the filename for
     /// a local asset.
     #[error("could not determine file name for asset at {origin_path}")]
