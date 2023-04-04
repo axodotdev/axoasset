@@ -12,7 +12,7 @@ struct SourceFileInner {
     /// "Name" of the file (this can be a path if you want)
     name: String,
     /// Contents of the file
-    source: String,
+    contents: String,
 }
 
 /// A file's contents along with its display name
@@ -33,11 +33,11 @@ impl SourceFile {
         Self::new(name, String::new())
     }
     /// Create a new source file with the given name and contents.
-    pub fn new(name: &str, source: String) -> Self {
+    pub fn new(name: &str, contents: String) -> Self {
         SourceFile {
             inner: Arc::new(SourceFileInner {
                 name: name.to_owned(),
-                source,
+                contents,
             }),
         }
     }
@@ -45,11 +45,11 @@ impl SourceFile {
     #[cfg(feature = "remote")]
     /// SourceFile equivalent of [`crate::RemoteAsset::load`][]
     pub async fn load_remote(origin_path: &str) -> Result<SourceFile> {
-        let source = crate::RemoteAsset::load_string(origin_path).await?;
+        let contents = crate::RemoteAsset::load_string(origin_path).await?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
                 name: origin_path.to_owned(),
-                source,
+                contents,
             }),
         })
     }
@@ -57,22 +57,22 @@ impl SourceFile {
     /// SourceFile equivalent of [`LocalAsset::load`][]
     pub fn load_local<'a>(origin_path: impl Into<&'a Utf8Path>) -> Result<SourceFile> {
         let origin_path = origin_path.into();
-        let source = LocalAsset::load_string(origin_path.as_str())?;
+        let contents = LocalAsset::load_string(origin_path.as_str())?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
                 name: origin_path.to_string(),
-                source,
+                contents,
             }),
         })
     }
 
     /// SourceFile equivalent of [`Asset::load`][]
     pub async fn load(origin_path: &str) -> Result<SourceFile> {
-        let source = Asset::load_string(origin_path).await?;
+        let contents = Asset::load_string(origin_path).await?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
                 name: origin_path.to_owned(),
-                source,
+                contents,
             }),
         })
     }
@@ -83,7 +83,7 @@ impl SourceFile {
         let json = serde_json::from_str(self.source()).map_err(|details| {
             let span = self.span_for_line_col(details.line(), details.column());
             AxoassetError::Json {
-                source: self.clone(),
+                contents: self.clone(),
                 span,
                 details,
             }
@@ -94,12 +94,12 @@ impl SourceFile {
     /// Try to deserialize the contents of the SourceFile as toml
     #[cfg(feature = "toml-serde")]
     pub fn deserialize_toml<'a, T: serde::Deserialize<'a>>(&'a self) -> Result<T> {
-        let toml = toml::from_str(self.source()).map_err(|details| {
+        let toml = toml::from_str(self.contents()).map_err(|details| {
             let span = details
                 .line_col()
                 .and_then(|(line, col)| self.span_for_line_col(line, col));
             AxoassetError::Toml {
-                source: self.clone(),
+                contents: self.clone(),
                 span,
                 details,
             }
@@ -112,8 +112,8 @@ impl SourceFile {
         &self.inner.name
     }
     /// Get the contents of a SourceFile
-    pub fn source(&self) -> &str {
-        &self.inner.source
+    pub fn contents(&self) -> &str {
+        &self.inner.contents
     }
 
     /// Gets a proper [`SourceSpan`] from a line-and-column representation
@@ -125,7 +125,7 @@ impl SourceFile {
     /// This is a pretty heavy-weight process, we have to basically linearly scan the source
     /// for this position!
     pub fn span_for_line_col(&self, line: usize, col: usize) -> Option<SourceSpan> {
-        let src = self.source();
+        let src = self.contents();
         let src_line = src.lines().nth(line.checked_sub(1)?)?;
         if col > src_line.len() {
             return None;
@@ -150,7 +150,7 @@ impl SourceCode for SourceFile {
         context_lines_after: usize,
     ) -> std::result::Result<Box<dyn miette::SpanContents<'a> + 'a>, miette::MietteError> {
         let contents = self
-            .source()
+            .contents()
             .read_span(span, context_lines_before, context_lines_after)?;
         Ok(Box::new(MietteSpanContents::new_named(
             self.name().to_owned(),
@@ -167,7 +167,7 @@ impl Debug for SourceFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SourceFile")
             .field("name", &self.name())
-            .field("source", &self.source())
+            .field("contents", &self.contents())
             .finish()
     }
 }
