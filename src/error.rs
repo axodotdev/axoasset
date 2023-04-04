@@ -275,7 +275,7 @@ pub enum AxoassetError {
         source: crate::SourceFile,
         /// The range the error was found on
         #[label]
-        span: miette::SourceSpan,
+        span: Option<miette::SourceSpan>,
         /// Details of the error
         #[source]
         details: serde_json::Error,
@@ -291,7 +291,7 @@ pub enum AxoassetError {
         source: crate::SourceFile,
         /// The range the error was found on
         #[label]
-        span: miette::SourceSpan,
+        span: Option<miette::SourceSpan>,
         /// Details of the error
         #[source]
         details: toml::de::Error,

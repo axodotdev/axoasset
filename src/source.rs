@@ -81,9 +81,7 @@ impl SourceFile {
     #[cfg(feature = "json-serde")]
     pub fn deserialize_json<'a, T: serde::Deserialize<'a>>(&'a self) -> Result<T> {
         let json = serde_json::from_str(self.source()).map_err(|details| {
-            let span = self
-                .span_for_line_col(details.line(), details.column())
-                .unwrap_or((0..0).into());
+            let span = self.span_for_line_col(details.line(), details.column());
             AxoassetError::Json {
                 source: self.clone(),
                 span,
@@ -99,8 +97,7 @@ impl SourceFile {
         let toml = toml::from_str(self.source()).map_err(|details| {
             let span = details
                 .line_col()
-                .and_then(|(line, col)| self.span_for_line_col(line, col))
-                .unwrap_or((0..0).into());
+                .and_then(|(line, col)| self.span_for_line_col(line, col));
             AxoassetError::Toml {
                 source: self.clone(),
                 span,
