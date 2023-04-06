@@ -4,7 +4,7 @@ use std::sync::Arc;
 use camino::Utf8Path;
 use miette::{MietteSpanContents, SourceCode, SourceSpan};
 
-use crate::{error::*, LocalAsset, RemoteAsset};
+use crate::{error::*, LocalAsset};
 
 /// The inner contents of a [`SourceFile`][].
 #[derive(Eq, PartialEq)]
@@ -52,7 +52,7 @@ impl SourceFile {
         let contents = crate::RemoteAsset::load_string(origin_path).await?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                filename: RemoteAsset::load(origin_path).await?.filename,
+                filename: crate::RemoteAsset::load(origin_path).await?.filename,
                 origin_path: origin_path.to_owned(),
                 contents,
             }),
@@ -75,10 +75,10 @@ impl SourceFile {
     /// Try to deserialize the contents of the SourceFile as json
     #[cfg(feature = "json-serde")]
     pub fn deserialize_json<'a, T: serde::Deserialize<'a>>(&'a self) -> Result<T> {
-        let json = serde_json::from_str(self.source()).map_err(|details| {
+        let json = serde_json::from_str(self.contents()).map_err(|details| {
             let span = self.span_for_line_col(details.line(), details.column());
             AxoassetError::Json {
-                contents: self.clone(),
+                source: self.clone(),
                 span,
                 details,
             }
@@ -94,7 +94,7 @@ impl SourceFile {
                 .line_col()
                 .and_then(|(line, col)| self.span_for_line_col(line, col));
             AxoassetError::Toml {
-                contents: self.clone(),
+                source: self.clone(),
                 span,
                 details,
             }
