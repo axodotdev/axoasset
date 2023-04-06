@@ -6,7 +6,7 @@ pub type Result<T> = std::result::Result<T, AxoassetError>;
 /// The set of errors that can occur when axoasset is used
 #[derive(Debug, Error, Diagnostic)]
 pub enum AxoassetError {
-    /// This error is a transparent error forwarded from the reqwest library.
+    /// This error is a transparent error forwarded from the reqwe.
     /// Long-term the goal is to eliminate this error variant in favor of more
     /// specific error variants.
     #[error(transparent)]
@@ -256,6 +256,7 @@ pub enum AxoassetError {
         /// The problematic path
         path: std::path::PathBuf,
     },
+
     #[error("Failed to find {desired_filename} in an ancestor of {start_dir}")]
     /// This error indicates we failed to find the desired file in an ancestor of the search dir.
     SearchFailed {

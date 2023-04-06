@@ -4,15 +4,17 @@ use std::sync::Arc;
 use camino::Utf8Path;
 use miette::{MietteSpanContents, SourceCode, SourceSpan};
 
-use crate::{error::*, Asset, LocalAsset};
+use crate::{error::*, LocalAsset, RemoteAsset};
 
 /// The inner contents of a [`SourceFile`][].
 #[derive(Eq, PartialEq)]
 struct SourceFileInner {
-    /// "Name" of the file (this can be a path if you want)
-    name: String,
+    /// "Name" of the file
+    filename: String,
+    /// Origin path of the file
+    origin_path: String,
     /// Contents of the file
-    source: String,
+    contents: String,
 }
 
 /// A file's contents along with its display name
@@ -29,27 +31,30 @@ pub struct SourceFile {
 
 impl SourceFile {
     /// Create an empty SourceFile with the given name
-    pub fn new_empty(name: &str) -> Self {
-        Self::new(name, String::new())
+    pub fn new_empty(origin_path: &str) -> Result<Self> {
+        Self::new(origin_path, String::new())
     }
+
     /// Create a new source file with the given name and contents.
-    pub fn new(name: &str, source: String) -> Self {
-        SourceFile {
+    pub fn new(origin_path: &str, contents: String) -> Result<Self> {
+        Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                name: name.to_owned(),
-                source,
+                filename: LocalAsset::filename(origin_path)?,
+                origin_path: origin_path.to_owned(),
+                contents,
             }),
-        }
+        })
     }
 
     #[cfg(feature = "remote")]
     /// SourceFile equivalent of [`crate::RemoteAsset::load`][]
     pub async fn load_remote(origin_path: &str) -> Result<SourceFile> {
-        let source = crate::RemoteAsset::load_string(origin_path).await?;
+        let contents = crate::RemoteAsset::load_string(origin_path).await?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                name: origin_path.to_owned(),
-                source,
+                filename: RemoteAsset::load(origin_path).await?.filename,
+                origin_path: origin_path.to_owned(),
+                contents,
             }),
         })
     }
@@ -57,22 +62,12 @@ impl SourceFile {
     /// SourceFile equivalent of [`LocalAsset::load`][]
     pub fn load_local<'a>(origin_path: impl Into<&'a Utf8Path>) -> Result<SourceFile> {
         let origin_path = origin_path.into();
-        let source = LocalAsset::load_string(origin_path.as_str())?;
+        let contents = LocalAsset::load_string(origin_path.as_str())?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                name: origin_path.to_string(),
-                source,
-            }),
-        })
-    }
-
-    /// SourceFile equivalent of [`Asset::load`][]
-    pub async fn load(origin_path: &str) -> Result<SourceFile> {
-        let source = Asset::load_string(origin_path).await?;
-        Ok(SourceFile {
-            inner: Arc::new(SourceFileInner {
-                name: origin_path.to_owned(),
-                source,
+                filename: LocalAsset::filename(origin_path.as_str())?,
+                origin_path: origin_path.to_string(),
+                contents,
             }),
         })
     }
@@ -83,7 +78,7 @@ impl SourceFile {
         let json = serde_json::from_str(self.source()).map_err(|details| {
             let span = self.span_for_line_col(details.line(), details.column());
             AxoassetError::Json {
-                source: self.clone(),
+                contents: self.clone(),
                 span,
                 details,
             }
@@ -94,12 +89,12 @@ impl SourceFile {
     /// Try to deserialize the contents of the SourceFile as toml
     #[cfg(feature = "toml-serde")]
     pub fn deserialize_toml<'a, T: serde::Deserialize<'a>>(&'a self) -> Result<T> {
-        let toml = toml::from_str(self.source()).map_err(|details| {
+        let toml = toml::from_str(self.contents()).map_err(|details| {
             let span = details
                 .line_col()
                 .and_then(|(line, col)| self.span_for_line_col(line, col));
             AxoassetError::Toml {
-                source: self.clone(),
+                contents: self.clone(),
                 span,
                 details,
             }
@@ -107,13 +102,19 @@ impl SourceFile {
         Ok(toml)
     }
 
-    /// Get the name of a SourceFile
-    pub fn name(&self) -> &str {
-        &self.inner.name
+    /// Get the filename of a SourceFile
+    pub fn filename(&self) -> &str {
+        &self.inner.filename
     }
+
+    /// Get the origin_path of a SourceFile
+    pub fn origin_path(&self) -> &str {
+        &self.inner.origin_path
+    }
+
     /// Get the contents of a SourceFile
-    pub fn source(&self) -> &str {
-        &self.inner.source
+    pub fn contents(&self) -> &str {
+        &self.inner.contents
     }
 
     /// Gets a proper [`SourceSpan`] from a line-and-column representation
@@ -125,7 +126,7 @@ impl SourceFile {
     /// This is a pretty heavy-weight process, we have to basically linearly scan the source
     /// for this position!
     pub fn span_for_line_col(&self, line: usize, col: usize) -> Option<SourceSpan> {
-        let src = self.source();
+        let src = self.contents();
         let src_line = src.lines().nth(line.checked_sub(1)?)?;
         if col > src_line.len() {
             return None;
@@ -149,11 +150,11 @@ impl SourceCode for SourceFile {
         context_lines_before: usize,
         context_lines_after: usize,
     ) -> std::result::Result<Box<dyn miette::SpanContents<'a> + 'a>, miette::MietteError> {
-        let contents = self
-            .source()
-            .read_span(span, context_lines_before, context_lines_after)?;
+        let contents =
+            self.contents()
+                .read_span(span, context_lines_before, context_lines_after)?;
         Ok(Box::new(MietteSpanContents::new_named(
-            self.name().to_owned(),
+            self.origin_path().to_owned(),
             contents.data(),
             *contents.span(),
             contents.line(),
@@ -166,8 +167,8 @@ impl SourceCode for SourceFile {
 impl Debug for SourceFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SourceFile")
-            .field("name", &self.name())
-            .field("source", &self.source())
+            .field("origin_path", &self.origin_path())
+            .field("contents", &self.contents())
             .finish()
     }
 }
