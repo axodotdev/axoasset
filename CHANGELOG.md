@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.1 - 2023-04-06
+
+### 🛠️  Fixes
+
+- **Fix compilation errors for features and add tests - [Gankra]/[ashleygwilliams], [pr33]**
+
+[pr33]: https://github.com/axodotdev/axoasset/pull/33
+
 ## v0.1.0 - 2023-04-06
 
 ### 🎁 Features
