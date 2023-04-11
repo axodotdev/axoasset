@@ -141,6 +141,34 @@ impl SourceFile {
         }
         Some(SourceSpan::from(start..end))
     }
+
+    /// Creates a span for an item using a substring of `contents`
+    ///
+    /// Note that substr must be a literal substring, as in it must be
+    /// a pointer into the same string! If it's not we'll return None.
+    pub fn span_for_substr(&self, substr: &str) -> Option<SourceSpan> {
+        // Get the bounds of the full string
+        let base_addr = self.inner.contents.as_ptr() as usize;
+        let base_len = self.inner.contents.len();
+
+        // Get the bounds of the substring
+        let substr_addr = substr.as_ptr() as usize;
+        let substr_len = substr.len();
+
+        // The index of the substring is just the number of bytes it is from the start
+        // (This will bail out if the """substring""" has an address *before* the full string)
+        let start = substr_addr.checked_sub(base_addr)?;
+        // The end index (exclusive) is just the start index + sublen
+        // (This will bail out if this overflows)
+        let end = start.checked_add(substr_len)?;
+        // Finally, make sure the substr endpoint isn't past the end of the full string
+        if end > base_len {
+            return None;
+        }
+
+        // At this point it's definitely a substring, nice!
+        Some(SourceSpan::from(start..end))
+    }
 }
 
 impl SourceCode for SourceFile {
