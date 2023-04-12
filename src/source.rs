@@ -30,20 +30,28 @@ pub struct SourceFile {
 }
 
 impl SourceFile {
-    /// Create an empty SourceFile with the given name
-    pub fn new_empty(origin_path: &str) -> Result<Self> {
+    /// Create an empty SourceFile with the given name.
+    ///
+    /// See [`SourceFile::new`][] for details.
+    pub fn new_empty(origin_path: &str) -> Self {
         Self::new(origin_path, String::new())
     }
 
     /// Create a new source file with the given name and contents.
-    pub fn new(origin_path: &str, contents: String) -> Result<Self> {
-        Ok(SourceFile {
+    ///
+    /// This is intended for situations where you have the contents already
+    /// and just want a SourceFile to manage it. This is appropriate for
+    /// strings that were constructed dynamically or for tests.
+    ///
+    /// The origin_path will be used as the filename as well.
+    pub fn new(origin_path: &str, contents: String) -> Self {
+        SourceFile {
             inner: Arc::new(SourceFileInner {
-                filename: LocalAsset::filename(origin_path)?,
+                filename: origin_path.to_owned(),
                 origin_path: origin_path.to_owned(),
                 contents,
             }),
-        })
+        }
     }
 
     #[cfg(feature = "remote")]

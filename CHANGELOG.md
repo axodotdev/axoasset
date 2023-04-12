@@ -10,7 +10,16 @@
     doesn't support them as long as it returns actual substrings pointing into
     the original SourceFile's inner String.
 
+### 🛠️  Fixes
+
+- **Simply SourceFile::new and new_empty - [Gankra],  [pr37]**
+
+  SourceFile::new and new_empty no longer return Results and simply use the origin_path
+  as the file name, making them appropriate for synthetic/test inputs that don't map
+  to actual files.
+
 [pr35]: https://github.com/axodotdev/axoasset/pull/35
+[pr37]: https://github.com/axodotdev/axoasset/pull/37
 
 ## v0.1.1 - 2023-04-06
 
