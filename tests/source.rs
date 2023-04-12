@@ -4,7 +4,7 @@ use miette::SourceCode;
 fn substr_span() {
     // Make the file
     let contents = String::from("hello !there!");
-    let source = axoasset::SourceFile::new("file.md", contents).unwrap();
+    let source = axoasset::SourceFile::new("file.md", contents);
 
     // Do some random parsing operation
     let mut parse = source.contents().split('!');
@@ -23,7 +23,7 @@ fn substr_span() {
 fn substr_span_invalid() {
     // Make the file
     let contents = String::from("hello !there!");
-    let source = axoasset::SourceFile::new("file.md", contents).unwrap();
+    let source = axoasset::SourceFile::new("file.md", contents);
 
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let there_span = source.span_for_substr("there");
