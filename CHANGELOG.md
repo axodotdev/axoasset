@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.0 - 2023-04-12
+
+### 🎁 Features
+
+- **✨ New feature: `SourceFile::span_for_substr` - [Gankra],  [pr35]**
+
+    This function enables the ability to get spans even when using a tool that
+    doesn't support them as long as it returns actual substrings pointing into
+    the original SourceFile's inner String.
+
+[pr35]: https://github.com/axodotdev/axoasset/pull/35
+
 ## v0.1.1 - 2023-04-06
 
 ### 🛠️  Fixes
