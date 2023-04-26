@@ -106,6 +106,15 @@ impl LocalAsset {
     /// filename from the origin path
     pub fn write_new(contents: &str, filename: &str, dest_dir: &str) -> Result<PathBuf> {
         let dest_path = Path::new(dest_dir).join(filename);
+        match fs::create_dir_all(dest_dir) {
+            Ok(_) => (),
+            Err(details) => {
+                return Err(AxoassetError::LocalAssetWriteNewFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                })
+            }
+        }
         match fs::write(&dest_path, contents) {
             Ok(_) => Ok(dest_path),
             Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
@@ -113,6 +122,40 @@ impl LocalAsset {
                 details,
             }),
         }
+    }
+
+    /// Creates a new directory, including all parent directories
+    pub fn create_directory(dest: &str) -> Result<PathBuf> {
+        let dest_path = PathBuf::from(dest);
+        match fs::create_dir_all(&dest_path) {
+            Ok(_) => Ok(dest_path),
+            Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            }),
+        }
+    }
+
+    /// Removes a file or directory
+    pub fn remove(dest: &str) -> Result<()> {
+        let dest_path = PathBuf::from(dest);
+        if dest_path.is_dir() {
+            if let Err(details) = fs::remove_dir_all(&dest_path) {
+                return Err(AxoassetError::LocalAssetRemoveFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                });
+            }
+        } else {
+            if let Err(details) = fs::remove_file(&dest_path) {
+                return Err(AxoassetError::LocalAssetRemoveFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                });
+            }
+        }
+
+        Ok(())
     }
 
     /// Copies an asset from one location on the local filesystem to another

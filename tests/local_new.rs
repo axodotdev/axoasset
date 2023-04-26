@@ -32,3 +32,30 @@ async fn it_creates_new_assets() {
         }
     }
 }
+
+#[test]
+fn it_creates_parent_directories_on_write_new() {
+    let dest = assert_fs::TempDir::new().unwrap();
+
+    let dest_dir = Path::new(&dest.as_os_str())
+        .join("subdir")
+        .join("test.md")
+        .display()
+        .to_string();
+    axoasset::LocalAsset::write_new("file content", "index.md", &dest_dir).unwrap();
+
+    assert!(Path::new(&dest.as_os_str()).join("subdir").exists());
+}
+
+#[test]
+fn it_creates_a_new_directory() {
+    let dest = assert_fs::TempDir::new().unwrap();
+
+    let dest_dir = Path::new(&dest.as_os_str())
+        .join("subdir")
+        .display()
+        .to_string();
+    axoasset::LocalAsset::create_directory(&dest_dir).unwrap();
+
+    assert!(Path::new(&dest.as_os_str()).join("subdir").exists());
+}
