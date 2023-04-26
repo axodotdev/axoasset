@@ -155,8 +155,36 @@ impl LocalAsset {
         }
     }
 
-    /// Removes a file or directory
-    pub fn remove(dest: &str) -> Result<()> {
+    /// Removes a file
+    pub fn remove_file(dest: &str) -> Result<()> {
+        let dest_path = PathBuf::from(dest);
+        if let Err(details) = fs::remove_file(&dest_path) {
+            return Err(AxoassetError::LocalAssetRemoveFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            });
+        }
+
+        Ok(())
+    }
+
+    /// Removes a directory
+    pub fn remove_dir(dest: &str) -> Result<()> {
+        let dest_path = PathBuf::from(dest);
+        if dest_path.is_dir() {
+            if let Err(details) = fs::remove_dir(&dest_path) {
+                return Err(AxoassetError::LocalAssetRemoveFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                });
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Removes a directory and all of its contents
+    pub fn remove_dir_all(dest: &str) -> Result<()> {
         let dest_path = PathBuf::from(dest);
         if dest_path.is_dir() {
             if let Err(details) = fs::remove_dir_all(&dest_path) {
@@ -165,11 +193,6 @@ impl LocalAsset {
                     details,
                 });
             }
-        } else if let Err(details) = fs::remove_file(&dest_path) {
-            return Err(AxoassetError::LocalAssetRemoveFailed {
-                dest_path: dest_path.display().to_string(),
-                details,
-            });
         }
 
         Ok(())
