@@ -147,13 +147,11 @@ impl LocalAsset {
                     details,
                 });
             }
-        } else {
-            if let Err(details) = fs::remove_file(&dest_path) {
-                return Err(AxoassetError::LocalAssetRemoveFailed {
-                    dest_path: dest_path.display().to_string(),
-                    details,
-                });
-            }
+        } else if let Err(details) = fs::remove_file(&dest_path) {
+            return Err(AxoassetError::LocalAssetRemoveFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            });
         }
 
         Ok(())
