@@ -136,7 +136,7 @@ impl LocalAsset {
         let dest_path = PathBuf::from(dest);
         match fs::create_dir(&dest_path) {
             Ok(_) => Ok(dest_path),
-            Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
+            Err(details) => Err(AxoassetError::LocalAssetDirCreationFailed {
                 dest_path: dest_path.display().to_string(),
                 details,
             }),
@@ -148,7 +148,7 @@ impl LocalAsset {
         let dest_path = PathBuf::from(dest);
         match fs::create_dir_all(&dest_path) {
             Ok(_) => Ok(dest_path),
-            Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
+            Err(details) => Err(AxoassetError::LocalAssetDirCreationFailed {
                 dest_path: dest_path.display().to_string(),
                 details,
             }),

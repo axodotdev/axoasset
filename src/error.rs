@@ -222,11 +222,20 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to write a new asset
     #[error("failed to write a new asset to {dest_path}.")]
-    #[diagnostic(help(
-        "Make sure your destination path is relative to your oranda config or project manifest file."
-    ))]
+    #[diagnostic(help("Make sure you have the correct rights to create a new file."))]
     LocalAssetWriteNewFailed {
         /// The path where the asset was being written to
+        dest_path: String,
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+
+    /// This error indicates that axoasset failed to create a new directory
+    #[error("failed to write a new directory to {dest_path}.")]
+    #[diagnostic(help("Make sure you have the correct rights to create a new directory."))]
+    LocalAssetDirCreationFailed {
+        /// The path where the directory was meant to be created
         dest_path: String,
         /// Details of the error
         #[source]
