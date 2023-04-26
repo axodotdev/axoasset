@@ -107,15 +107,6 @@ impl LocalAsset {
     /// filename from the origin path
     pub fn write_new(contents: &str, filename: &str, dest_dir: &str) -> Result<PathBuf> {
         let dest_path = Path::new(dest_dir).join(filename);
-        match fs::create_dir_all(dest_dir) {
-            Ok(_) => (),
-            Err(details) => {
-                return Err(AxoassetError::LocalAssetWriteNewFailed {
-                    dest_path: dest_path.display().to_string(),
-                    details,
-                })
-            }
-        }
         match fs::write(&dest_path, contents) {
             Ok(_) => Ok(dest_path),
             Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
@@ -125,8 +116,35 @@ impl LocalAsset {
         }
     }
 
-    /// Creates a new directory, including all parent directories
+    /// Writes an asset and all of its parent directories on the local filesystem.
+    pub fn write_new_all(contents: &str, filename: &str, dest_dir: &str) -> Result<PathBuf> {
+        let dest_path = Path::new(dest_dir).join(filename);
+        match fs::create_dir_all(dest_dir) {
+            Ok(_) => (),
+            Err(details) => {
+                return Err(AxoassetError::LocalAssetWriteNewFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                })
+            }
+        }
+        LocalAsset::write_new(contents, filename, dest_dir)
+    }
+
+    /// Creates a new directory
     pub fn create_directory(dest: &str) -> Result<PathBuf> {
+        let dest_path = PathBuf::from(dest);
+        match fs::create_dir(&dest_path) {
+            Ok(_) => Ok(dest_path),
+            Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            }),
+        }
+    }
+
+    /// Creates a new directory, including all parent directories
+    pub fn create_directory_all(dest: &str) -> Result<PathBuf> {
         let dest_path = PathBuf::from(dest);
         match fs::create_dir_all(&dest_path) {
             Ok(_) => Ok(dest_path),
