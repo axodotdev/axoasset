@@ -256,6 +256,20 @@ pub enum AxoassetError {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
     },
+
+    /// This error indicates we ran into an issue when creating an archive.
+    #[error("failed to create archive: {reason}")]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
+    LocalAssetArchive {
+        /// A specific step that failed
+        reason: String,
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+
     /// This error indicates we ran `std::env::current_dir` and somehow got an error.
     #[error("Failed to get the current working directory")]
     CurrentDir {

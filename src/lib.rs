@@ -11,6 +11,7 @@
 
 use std::path::PathBuf;
 
+pub(crate) mod compression;
 pub(crate) mod error;
 pub(crate) mod local;
 #[cfg(feature = "remote")]
