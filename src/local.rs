@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 use camino::{Utf8Path, Utf8PathBuf};
 
+use crate::compression::{tar_dir, zip_dir, CompressionImpl};
 use crate::error::*;
 
 /// A local asset contains a path on the local filesystem and its contents
@@ -115,6 +116,88 @@ impl LocalAsset {
         }
     }
 
+    /// Writes an asset and all of its parent directories on the local filesystem.
+    pub fn write_new_all(contents: &str, filename: &str, dest_dir: &str) -> Result<PathBuf> {
+        let dest_path = Path::new(dest_dir).join(filename);
+        match fs::create_dir_all(dest_dir) {
+            Ok(_) => (),
+            Err(details) => {
+                return Err(AxoassetError::LocalAssetWriteNewFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                })
+            }
+        }
+        LocalAsset::write_new(contents, filename, dest_dir)
+    }
+
+    /// Creates a new directory
+    pub fn create_directory(dest: &str) -> Result<PathBuf> {
+        let dest_path = PathBuf::from(dest);
+        match fs::create_dir(&dest_path) {
+            Ok(_) => Ok(dest_path),
+            Err(details) => Err(AxoassetError::LocalAssetDirCreationFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            }),
+        }
+    }
+
+    /// Creates a new directory, including all parent directories
+    pub fn create_directory_all(dest: &str) -> Result<PathBuf> {
+        let dest_path = PathBuf::from(dest);
+        match fs::create_dir_all(&dest_path) {
+            Ok(_) => Ok(dest_path),
+            Err(details) => Err(AxoassetError::LocalAssetDirCreationFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            }),
+        }
+    }
+
+    /// Removes a file
+    pub fn remove_file(dest: &str) -> Result<()> {
+        let dest_path = PathBuf::from(dest);
+        if let Err(details) = fs::remove_file(&dest_path) {
+            return Err(AxoassetError::LocalAssetRemoveFailed {
+                dest_path: dest_path.display().to_string(),
+                details,
+            });
+        }
+
+        Ok(())
+    }
+
+    /// Removes a directory
+    pub fn remove_dir(dest: &str) -> Result<()> {
+        let dest_path = PathBuf::from(dest);
+        if dest_path.is_dir() {
+            if let Err(details) = fs::remove_dir(&dest_path) {
+                return Err(AxoassetError::LocalAssetRemoveFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                });
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Removes a directory and all of its contents
+    pub fn remove_dir_all(dest: &str) -> Result<()> {
+        let dest_path = PathBuf::from(dest);
+        if dest_path.is_dir() {
+            if let Err(details) = fs::remove_dir_all(&dest_path) {
+                return Err(AxoassetError::LocalAssetRemoveFailed {
+                    dest_path: dest_path.display().to_string(),
+                    details,
+                });
+            }
+        }
+
+        Ok(())
+    }
+
     /// Copies an asset from one location on the local filesystem to another
     pub fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
         LocalAsset::load(origin_path)?.write(dest_dir)
@@ -180,6 +263,38 @@ impl LocalAsset {
                 origin_path: origin_path.to_string(),
             })
         }
+    }
+
+    /// Creates a new .tar.gz file from a provided directory
+    pub fn tar_gz_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
+        tar_dir(
+            Utf8Path::new(origin_dir),
+            Utf8Path::new(dest_dir),
+            &CompressionImpl::Gzip,
+        )
+    }
+
+    /// Creates a new .tar.xz file from a provided directory
+    pub fn tar_xz_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
+        tar_dir(
+            Utf8Path::new(origin_dir),
+            Utf8Path::new(dest_dir),
+            &CompressionImpl::Xzip,
+        )
+    }
+
+    /// Creates a new .tar.zstd file from a provided directory
+    pub fn tar_zstd_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
+        tar_dir(
+            Utf8Path::new(origin_dir),
+            Utf8Path::new(dest_dir),
+            &CompressionImpl::Zstd,
+        )
+    }
+
+    /// Creates a new .zip file from a provided directory
+    pub fn zip_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
+        zip_dir(Utf8Path::new(origin_dir), Utf8Path::new(dest_dir))
     }
 
     fn dest_path(&self, dest_dir: &str) -> Result<PathBuf> {

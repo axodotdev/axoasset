@@ -76,7 +76,7 @@ pub enum AxoassetError {
     },
 
     /// This error indicates that the mime type of the requested remote asset
-    /// was not an image.  
+    /// was not an image.
     #[error("when fetching asset at {origin_path}, the server's response mime type did not indicate an image.")]
     #[help(
         "Please make sure the asset url is correct and that the server is properly configured."
@@ -222,11 +222,33 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to write a new asset
     #[error("failed to write a new asset to {dest_path}.")]
-    #[diagnostic(help(
-        "Make sure your destination path is relative to your oranda config or project manifest file."
-    ))]
+    #[diagnostic(help("Make sure you have the correct permissons to create a new file."))]
     LocalAssetWriteNewFailed {
         /// The path where the asset was being written to
+        dest_path: String,
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+
+    /// This error indicates that axoasset failed to create a new directory
+    #[error("failed to write a new directory to {dest_path}.")]
+    #[diagnostic(help("Make sure you have the correct permissions to create a new directory."))]
+    LocalAssetDirCreationFailed {
+        /// The path where the directory was meant to be created
+        dest_path: String,
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+
+    /// This error indicates that axoasset failed to delete an asset
+    #[error("failed to delete asset at {dest_path}.")]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
+    LocalAssetRemoveFailed {
+        /// The path that was going to be deleted
         dest_path: String,
         /// Details of the error
         #[source]
@@ -243,6 +265,20 @@ pub enum AxoassetError {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
     },
+
+    /// This error indicates we ran into an issue when creating an archive.
+    #[error("failed to create archive: {reason}")]
+    #[diagnostic(help(
+        "Make sure your path is relative to your oranda config or project manifest file."
+    ))]
+    LocalAssetArchive {
+        /// A specific step that failed
+        reason: String,
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+
     /// This error indicates we ran `std::env::current_dir` and somehow got an error.
     #[error("Failed to get the current working directory")]
     CurrentDir {

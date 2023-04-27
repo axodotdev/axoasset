@@ -23,6 +23,10 @@ toml = { version = "0.5.9", optional = true }
 serde_json = { version = "1.0.95", optional = true }
 serde = { version = "1.0.159", optional = true, features = ["derive"] }
 camino = "1.1.4"
+tar = "0.4.38"
+zip = "0.6.4"
+flate2 = "1.0.25"
+xz2 = "0.1.7"
 
 [dev-dependencies]
 assert_fs = "1"
