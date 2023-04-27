@@ -4,7 +4,7 @@
 
 ### 🎁 Features
 
-- **✨ New `LocalAsset` functionality! - [shadows_withal], [pr38]**
+- **✨ New `LocalAsset` functionality! - [shadows-withal], [pr38]**
 
   We've added a lot more functions to `LocalAsset`:
 
