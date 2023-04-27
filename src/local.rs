@@ -132,7 +132,7 @@ impl LocalAsset {
     }
 
     /// Creates a new directory
-    pub fn create_directory(dest: &str) -> Result<PathBuf> {
+    pub fn create_dir(dest: &str) -> Result<PathBuf> {
         let dest_path = PathBuf::from(dest);
         match fs::create_dir(&dest_path) {
             Ok(_) => Ok(dest_path),
@@ -144,7 +144,7 @@ impl LocalAsset {
     }
 
     /// Creates a new directory, including all parent directories
-    pub fn create_directory_all(dest: &str) -> Result<PathBuf> {
+    pub fn create_dir_all(dest: &str) -> Result<PathBuf> {
         let dest_path = PathBuf::from(dest);
         match fs::create_dir_all(&dest_path) {
             Ok(_) => Ok(dest_path),
