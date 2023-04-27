@@ -55,7 +55,7 @@ fn it_creates_a_new_directory() {
         .join("subdir")
         .display()
         .to_string();
-    axoasset::LocalAsset::create_directory(&dest_dir).unwrap();
+    axoasset::LocalAsset::create_dir(&dest_dir).unwrap();
 
     assert!(Path::new(&dest.as_os_str()).join("subdir").exists());
 }
