@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.2.0 - 2023-04-27
+
+### 🎁 Features
+
+- **✨ New `LocalAsset` functionality! - [shadows-withal], [pr38], [pr46]**
+
+  We've added a lot more functions to `LocalAsset`:
+
+  - `write_new_all`, to write a file and its parent directories
+  - `create_dir`, which creates, well, a new directory
+  - `create_dir_all`, which creates a directory and its parent directories
+  - `remove_file`, which deletes a file
+  - `remove_dir`, which deletes an empty directory
+  - `remove_dir_all`, which deletes a directory and its contents
+  - `tar_{gz,xz,zstd}_dir`, which are three separate functions that create a tar archive with the
+    specified compression algorithm, either Gzip, Xzip, or Zstd
+  - `zip_dir`, which creates a zip archive
+
+- **✨ New feature: `SourceFile::span_for_substr` - [Gankra], [pr35]**
+
+  This function enables the ability to get spans even when using a tool that
+  doesn't support them as long as it returns actual substrings pointing into
+  the original SourceFile's inner String.
+
+### 🛠️ Fixes
+
+- **Simply SourceFile::new and new_empty - [Gankra], [pr43]**
+
+  SourceFile::new and new_empty no longer return Results and simply use the origin_path
+  as the file name, making them appropriate for synthetic/test inputs that don't map
+  to actual files.
+
+[pr35]: https://github.com/axodotdev/axoasset/pull/35
+[pr43]: https://github.com/axodotdev/axoasset/pull/43
+[pr38]: https://github.com/axodotdev/axoasset/pull/38
+[pr46]: https://github.com/axodotdev/axoasset/pull/46
+
+
 ## v0.1.1 - 2023-04-06
 
 ### 🛠️  Fixes
@@ -14,7 +52,7 @@
 
 - **✨ New type: `SourceFile` - [Gankra],  [pr25]**
 
-  `SourceFile` is a new asset type which is a readonly String version of 
+  `SourceFile` is a new asset type which is a readonly String version of
   `Asset` wrapped in an `Arc`. The purpose of this type is to be cheap to
   clone and pass around everywhere so that errors can refer to it (using the
   miette `#[source_code]` and `#[label]` attributes). The `Arc` ensures this
@@ -63,13 +101,13 @@
   in `oranda`, but quickly grew to encompass all fs/network calls. one of the
   things we often need to do is create a new file. This is only available on
   `LocalAsset` as, at least for the moment, that is the only place axoasset
-  has permissions to create new assets. 
+  has permissions to create new assets.
 
 - **make `RemoteAsset` an optional feature - [Gankra], [pr26]**
 
   A feature of `axoasset` is that it is agnostic to the origin of the asset:
   it can be local or remote. However, often, authors can be certain that they
-  will only be using local assets. In this case, it reduces dependencies to 
+  will only be using local assets. In this case, it reduces dependencies to
   not include the remote functionality. Previously this wasn't possible!
 
 - **`miette-ify` errors - [Gankra], [pr24]**
@@ -89,11 +127,8 @@
      - `origin_path`: the original source of the file
      - `filename`: derived from the `origin_path` and, in the case of `RemoteAsset`s
         also the headers from the network response.
-     - `contents`: the contents of the asset as bytes or a String depending on 
+     - `contents`: the contents of the asset as bytes or a String depending on
         asset type
-
-[ashleygwilliams]: https://github.com/ashleygwilliams
-[gankra]: https://github.com/gankra
 
 [pr24]: https://github.com/axodotdev/axoasset/pull/24
 [pr25]: https://github.com/axodotdev/axoasset/pull/25
@@ -106,3 +141,7 @@
 ## v0.0.1 - 2023-02-14
 
 Initial release.
+
+[ashleygwilliams]: https://github.com/ashleygwilliams
+[gankra]: https://github.com/gankra
+[shadows-withal]: https://github.com/shadows-withal
