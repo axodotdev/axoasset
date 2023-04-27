@@ -18,7 +18,7 @@
     specified compression algorithm, either Gzip, Xzip, or Zstd
   - `zip_dir`, which creates a zip archive
 
-- **✨ New feature: `SourceFile::span_for_substr` - [Gankra], [pr43]**
+- **✨ New feature: `SourceFile::span_for_substr` - [Gankra], [pr35]**
 
   This function enables the ability to get spans even when using a tool that
   doesn't support them as long as it returns actual substrings pointing into
@@ -26,7 +26,7 @@
 
 ### 🛠️ Fixes
 
-- **Simply SourceFile::new and new_empty - [Gankra], [pr37]**
+- **Simply SourceFile::new and new_empty - [Gankra], [pr43]**
 
   SourceFile::new and new_empty no longer return Results and simply use the origin_path
   as the file name, making them appropriate for synthetic/test inputs that don't map
