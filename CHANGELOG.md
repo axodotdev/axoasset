@@ -4,13 +4,13 @@
 
 ### 🎁 Features
 
-- **✨ New `LocalAsset` functionality! - [shadows-withal], [pr38]**
+- **✨ New `LocalAsset` functionality! - [shadows-withal], [pr38], [pr46]**
 
   We've added a lot more functions to `LocalAsset`:
 
   - `write_new_all`, to write a file and its parent directories
-  - `create_directory`, which creates, well, a new directory
-  - `create_directory_all`, which creates a directory and its parent directories
+  - `create_dir`, which creates, well, a new directory
+  - `create_dir_all`, which creates a directory and its parent directories
   - `remove_file`, which deletes a file
   - `remove_dir`, which deletes an empty directory
   - `remove_dir_all`, which deletes a directory and its contents
@@ -35,6 +35,7 @@
 [pr35]: https://github.com/axodotdev/axoasset/pull/35
 [pr43]: https://github.com/axodotdev/axoasset/pull/43
 [pr38]: https://github.com/axodotdev/axoasset/pull/38
+[pr46]: https://github.com/axodotdev/axoasset/pull/46
 
 
 ## v0.1.1 - 2023-04-06
