@@ -110,7 +110,7 @@ impl LocalAsset {
                 origin_path: dest_path.to_string(),
             });
         }
-        match fs::write(&dest_path, contents) {
+        match fs::write(dest_path, contents) {
             Ok(_) => Ok(dest_path.into()),
             Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
                 dest_path: dest_path.to_string(),
