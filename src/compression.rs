@@ -5,7 +5,7 @@ use camino::Utf8Path;
 use std::fs;
 
 /// Internal tar-file compression algorithms
-#[cfg(any(feature = "compression", feature = "compression-tar"))]
+#[cfg(feature = "compression-tar")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub(crate) enum CompressionImpl {
     /// .gz
@@ -16,7 +16,7 @@ pub(crate) enum CompressionImpl {
     Zstd,
 }
 
-#[cfg(any(feature = "compression", feature = "compression-tar"))]
+#[cfg(feature = "compression-tar")]
 pub(crate) fn tar_dir(
     src_path: &Utf8Path,
     dest_path: &Utf8Path,
@@ -153,7 +153,7 @@ pub(crate) fn tar_dir(
     Ok(())
 }
 
-#[cfg(any(feature = "compression", feature = "compression-zip"))]
+#[cfg(feature = "compression-zip")]
 pub(crate) fn zip_dir(src_path: &Utf8Path, dest_path: &Utf8Path) -> Result<()> {
     use zip::ZipWriter;
 
@@ -206,7 +206,7 @@ pub(crate) fn zip_dir(src_path: &Utf8Path, dest_path: &Utf8Path) -> Result<()> {
 
 /// Copies a file into a provided `ZipWriter`. Mostly factored out so that we can bunch up
 /// a bunch of `std::io::Error`s without having to individually handle them.
-#[cfg(any(feature = "compression", feature = "compression-zip"))]
+#[cfg(feature = "compression-zip")]
 fn copy_into_zip(
     entry: std::result::Result<std::fs::DirEntry, std::io::Error>,
     zip: &mut zip::ZipWriter<fs::File>,
