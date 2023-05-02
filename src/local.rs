@@ -3,7 +3,6 @@ use std::path::{Path, PathBuf};
 
 use camino::{Utf8Path, Utf8PathBuf};
 
-use crate::compression::{tar_dir, zip_dir, CompressionImpl};
 use crate::error::*;
 
 /// A local asset contains a path on the local filesystem and its contents
@@ -266,35 +265,39 @@ impl LocalAsset {
     }
 
     /// Creates a new .tar.gz file from a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
     pub fn tar_gz_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
-        tar_dir(
+        crate::compression::tar_dir(
             Utf8Path::new(origin_dir),
             Utf8Path::new(dest_dir),
-            &CompressionImpl::Gzip,
+            &crate::compression::CompressionImpl::Gzip,
         )
     }
 
     /// Creates a new .tar.xz file from a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
     pub fn tar_xz_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
-        tar_dir(
+        crate::compression::tar_dir(
             Utf8Path::new(origin_dir),
             Utf8Path::new(dest_dir),
-            &CompressionImpl::Xzip,
+            &crate::compression::CompressionImpl::Xzip,
         )
     }
 
     /// Creates a new .tar.zstd file from a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
     pub fn tar_zstd_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
-        tar_dir(
+        crate::compression::tar_dir(
             Utf8Path::new(origin_dir),
             Utf8Path::new(dest_dir),
-            &CompressionImpl::Zstd,
+            &crate::compression::CompressionImpl::Zstd,
         )
     }
 
     /// Creates a new .zip file from a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-zip"))]
     pub fn zip_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
-        zip_dir(Utf8Path::new(origin_dir), Utf8Path::new(dest_dir))
+        crate::compression::zip_dir(Utf8Path::new(origin_dir), Utf8Path::new(dest_dir))
     }
 
     fn dest_path(&self, dest_dir: &str) -> Result<PathBuf> {

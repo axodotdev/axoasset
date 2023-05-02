@@ -11,6 +11,11 @@
 
 use std::path::PathBuf;
 
+#[cfg(any(
+    feature = "compression",
+    feature = "compression-zip",
+    feature = "compression-tar"
+))]
 pub(crate) mod compression;
 pub(crate) mod error;
 pub(crate) mod local;

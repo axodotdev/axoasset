@@ -2,15 +2,10 @@
 
 use crate::error::*;
 use camino::Utf8Path;
-use flate2::{write::ZlibEncoder, Compression, GzBuilder};
-use std::{
-    fs::{self, DirEntry},
-    io::BufReader,
-};
-use xz2::write::XzEncoder;
-use zip::ZipWriter;
+use std::fs;
 
 /// Internal tar-file compression algorithms
+#[cfg(any(feature = "compression", feature = "compression-tar"))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub(crate) enum CompressionImpl {
     /// .gz
@@ -21,11 +16,15 @@ pub(crate) enum CompressionImpl {
     Zstd,
 }
 
+#[cfg(any(feature = "compression", feature = "compression-tar"))]
 pub(crate) fn tar_dir(
     src_path: &Utf8Path,
     dest_path: &Utf8Path,
     compression: &CompressionImpl,
 ) -> Result<()> {
+    use flate2::{write::ZlibEncoder, Compression, GzBuilder};
+    use xz2::write::XzEncoder;
+
     // Set up the archive/compression
     // The contents of the zip (e.g. a tar)
     let dir_name = src_path.file_name().unwrap();
@@ -154,7 +153,10 @@ pub(crate) fn tar_dir(
     Ok(())
 }
 
+#[cfg(any(feature = "compression", feature = "compression-zip"))]
 pub(crate) fn zip_dir(src_path: &Utf8Path, dest_path: &Utf8Path) -> Result<()> {
+    use zip::ZipWriter;
+
     // Set up the archive/compression
     let final_zip_file = match fs::File::create(dest_path) {
         Ok(file) => file,
@@ -204,21 +206,24 @@ pub(crate) fn zip_dir(src_path: &Utf8Path, dest_path: &Utf8Path) -> Result<()> {
 
 /// Copies a file into a provided `ZipWriter`. Mostly factored out so that we can bunch up
 /// a bunch of `std::io::Error`s without having to individually handle them.
+#[cfg(any(feature = "compression", feature = "compression-zip"))]
 fn copy_into_zip(
-    entry: std::result::Result<DirEntry, std::io::Error>,
-    zip: &mut ZipWriter<fs::File>,
+    entry: std::result::Result<std::fs::DirEntry, std::io::Error>,
+    zip: &mut zip::ZipWriter<fs::File>,
 ) -> std::result::Result<(), std::io::Error> {
+    use std::io::{self, BufReader};
+    use zip::{write::FileOptions, CompressionMethod};
+
     let entry = entry?;
     if entry.file_type()?.is_file() {
-        let options =
-            zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+        let options = FileOptions::default().compression_method(CompressionMethod::Stored);
         let file = fs::File::open(entry.path())?;
         let mut buf = BufReader::new(file);
         let file_name = entry.file_name();
         // FIXME: ...don't do this lossy conversion?
         let utf8_file_name = file_name.to_string_lossy();
         zip.start_file(utf8_file_name.clone(), options)?;
-        std::io::copy(&mut buf, zip)?;
+        io::copy(&mut buf, zip)?;
     } else {
         todo!("implement zip subdirs! (or was this a symlink?)");
     }
