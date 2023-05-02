@@ -68,12 +68,12 @@ impl SourceFile {
     }
 
     /// SourceFile equivalent of [`LocalAsset::load`][]
-    pub fn load_local<'a>(origin_path: impl Into<&'a Utf8Path>) -> Result<SourceFile> {
-        let origin_path = origin_path.into();
+    pub fn load_local(origin_path: impl AsRef<Utf8Path>) -> Result<SourceFile> {
+        let origin_path = origin_path.as_ref();
         let contents = LocalAsset::load_string(origin_path.as_str())?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                filename: LocalAsset::filename(origin_path.as_str())?,
+                filename: LocalAsset::filename(origin_path)?,
                 origin_path: origin_path.to_string(),
                 contents,
             }),
