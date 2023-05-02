@@ -42,7 +42,7 @@ fn it_creates_parent_directories() {
         .join("test.md")
         .display()
         .to_string();
-    axoasset::LocalAsset::write_new_all("file content", &dest_path).unwrap();
+    axoasset::LocalAsset::write_new_all("file content", dest_path).unwrap();
 
     assert!(Path::new(&dest.as_os_str()).join("subdir").exists());
 }
@@ -55,7 +55,7 @@ fn it_creates_a_new_directory() {
         .join("subdir")
         .display()
         .to_string();
-    axoasset::LocalAsset::create_dir(&dest_dir).unwrap();
+    axoasset::LocalAsset::create_dir(dest_dir).unwrap();
 
     assert!(Path::new(&dest.as_os_str()).join("subdir").exists());
 }

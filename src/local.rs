@@ -23,7 +23,8 @@ pub struct LocalAsset {
 impl LocalAsset {
     /// A new asset is created with a path on the local filesystem and a
     /// vector of bytes representing its contents
-    pub fn new(origin_path: &str, contents: Vec<u8>) -> Result<Self> {
+    pub fn new(origin_path: impl AsRef<Utf8Path>, contents: Vec<u8>) -> Result<Self> {
+        let origin_path = origin_path.as_ref();
         Ok(LocalAsset {
             filename: LocalAsset::filename(origin_path)?,
             origin_path: origin_path.to_string(),
@@ -33,7 +34,8 @@ impl LocalAsset {
 
     /// Loads an asset from a path on the local filesystem, returning a
     /// LocalAsset struct
-    pub fn load(origin_path: &str) -> Result<LocalAsset> {
+    pub fn load(origin_path: impl AsRef<Utf8Path>) -> Result<LocalAsset> {
+        let origin_path = origin_path.as_ref();
         match Path::new(origin_path).try_exists() {
             Ok(_) => match fs::read(origin_path) {
                 Ok(contents) => Ok(LocalAsset {
@@ -55,7 +57,8 @@ impl LocalAsset {
 
     /// Loads an asset from a path on the local filesystem, returning a
     /// string of its contents
-    pub fn load_string(origin_path: &str) -> Result<String> {
+    pub fn load_string(origin_path: impl AsRef<Utf8Path>) -> Result<String> {
+        let origin_path = origin_path.as_ref();
         match Path::new(origin_path).try_exists() {
             Ok(_) => match fs::read_to_string(origin_path) {
                 Ok(contents) => Ok(contents),
@@ -73,7 +76,8 @@ impl LocalAsset {
 
     /// Loads an asset from a path on the local filesystem, returning a
     /// vector of bytes of its contents
-    pub fn load_bytes(origin_path: &str) -> Result<Vec<u8>> {
+    pub fn load_bytes(origin_path: impl AsRef<Utf8Path>) -> Result<Vec<u8>> {
+        let origin_path = origin_path.as_ref();
         match Path::new(origin_path).try_exists() {
             Ok(_) => match fs::read(origin_path) {
                 Ok(contents) => Ok(contents),
@@ -91,20 +95,22 @@ impl LocalAsset {
 
     /// Writes an asset to a path on the local filesystem, determines the
     /// filename from the origin path
-    pub fn write(&self, dest_dir: &str) -> Result<PathBuf> {
-        let dest_path = self.dest_path(dest_dir)?;
+    pub fn write(&self, dest_dir: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+        let dest_dir = dest_dir.as_ref();
+        let dest_path = dest_dir.join(&self.filename);
         match fs::write(&dest_path, &self.contents) {
-            Ok(_) => Ok(dest_path),
+            Ok(_) => Ok(dest_path.into()),
             Err(details) => Err(AxoassetError::LocalAssetWriteFailed {
                 origin_path: self.origin_path.to_string(),
-                dest_path: dest_path.display().to_string(),
+                dest_path: dest_path.to_string(),
                 details,
             }),
         }
     }
 
     /// Writes an asset to a path on the local filesystem
-    pub fn write_new(contents: &str, dest_path: &str) -> Result<PathBuf> {
+    pub fn write_new(contents: &str, dest_path: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+        let dest_path = dest_path.as_ref();
         if Path::new(dest_path).file_name().is_none() {
             return Err(AxoassetError::LocalAssetMissingFilename {
                 origin_path: dest_path.to_string(),
@@ -120,7 +126,8 @@ impl LocalAsset {
     }
 
     /// Writes an asset and all of its parent directories on the local filesystem.
-    pub fn write_new_all(contents: &str, dest_path: &str) -> Result<PathBuf> {
+    pub fn write_new_all(contents: &str, dest_path: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+        let dest_path = dest_path.as_ref();
         if Path::new(dest_path).file_name().is_none() {
             return Err(AxoassetError::LocalAssetMissingFilename {
                 origin_path: dest_path.to_string(),
@@ -140,35 +147,35 @@ impl LocalAsset {
     }
 
     /// Creates a new directory
-    pub fn create_dir(dest: &str) -> Result<PathBuf> {
-        let dest_path = PathBuf::from(dest);
-        match fs::create_dir(&dest_path) {
-            Ok(_) => Ok(dest_path),
+    pub fn create_dir(dest: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+        let dest_path = dest.as_ref();
+        match fs::create_dir(dest_path) {
+            Ok(_) => Ok(dest_path.into()),
             Err(details) => Err(AxoassetError::LocalAssetDirCreationFailed {
-                dest_path: dest_path.display().to_string(),
+                dest_path: dest_path.to_string(),
                 details,
             }),
         }
     }
 
     /// Creates a new directory, including all parent directories
-    pub fn create_dir_all(dest: &str) -> Result<PathBuf> {
-        let dest_path = PathBuf::from(dest);
-        match fs::create_dir_all(&dest_path) {
-            Ok(_) => Ok(dest_path),
+    pub fn create_dir_all(dest: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+        let dest_path = dest.as_ref();
+        match fs::create_dir_all(dest_path) {
+            Ok(_) => Ok(dest_path.into()),
             Err(details) => Err(AxoassetError::LocalAssetDirCreationFailed {
-                dest_path: dest_path.display().to_string(),
+                dest_path: dest_path.to_string(),
                 details,
             }),
         }
     }
 
     /// Removes a file
-    pub fn remove_file(dest: &str) -> Result<()> {
-        let dest_path = PathBuf::from(dest);
-        if let Err(details) = fs::remove_file(&dest_path) {
+    pub fn remove_file(dest: impl AsRef<Utf8Path>) -> Result<()> {
+        let dest_path = dest.as_ref();
+        if let Err(details) = fs::remove_file(dest_path) {
             return Err(AxoassetError::LocalAssetRemoveFailed {
-                dest_path: dest_path.display().to_string(),
+                dest_path: dest_path.to_string(),
                 details,
             });
         }
@@ -177,12 +184,12 @@ impl LocalAsset {
     }
 
     /// Removes a directory
-    pub fn remove_dir(dest: &str) -> Result<()> {
-        let dest_path = PathBuf::from(dest);
+    pub fn remove_dir(dest: impl AsRef<Utf8Path>) -> Result<()> {
+        let dest_path = dest.as_ref();
         if dest_path.is_dir() {
-            if let Err(details) = fs::remove_dir(&dest_path) {
+            if let Err(details) = fs::remove_dir(dest_path) {
                 return Err(AxoassetError::LocalAssetRemoveFailed {
-                    dest_path: dest_path.display().to_string(),
+                    dest_path: dest_path.to_string(),
                     details,
                 });
             }
@@ -192,12 +199,12 @@ impl LocalAsset {
     }
 
     /// Removes a directory and all of its contents
-    pub fn remove_dir_all(dest: &str) -> Result<()> {
-        let dest_path = PathBuf::from(dest);
+    pub fn remove_dir_all(dest: impl AsRef<Utf8Path>) -> Result<()> {
+        let dest_path = dest.as_ref();
         if dest_path.is_dir() {
-            if let Err(details) = fs::remove_dir_all(&dest_path) {
+            if let Err(details) = fs::remove_dir_all(dest_path) {
                 return Err(AxoassetError::LocalAssetRemoveFailed {
-                    dest_path: dest_path.display().to_string(),
+                    dest_path: dest_path.to_string(),
                     details,
                 });
             }
@@ -207,7 +214,10 @@ impl LocalAsset {
     }
 
     /// Copies an asset from one location on the local filesystem to another
-    pub fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
+    pub fn copy(
+        origin_path: impl AsRef<Utf8Path>,
+        dest_dir: impl AsRef<Utf8Path>,
+    ) -> Result<PathBuf> {
         LocalAsset::load(origin_path)?.write(dest_dir)
     }
 
@@ -223,11 +233,11 @@ impl LocalAsset {
     /// Find a desired file in the provided dir or an ancestor of it.
     ///
     /// On success returns the path to the found file.
-    pub fn search_ancestors<'a>(
-        start_dir: impl Into<&'a Utf8Path>,
+    pub fn search_ancestors(
+        start_dir: impl AsRef<Utf8Path>,
         desired_filename: &str,
     ) -> Result<Utf8PathBuf> {
-        let start_dir = start_dir.into();
+        let start_dir = start_dir.as_ref();
         // We want a proper absolute path so we can compare paths to workspace roots easily.
         //
         // Also if someone starts the path with ./ we should trim that to avoid weirdness.
@@ -257,15 +267,9 @@ impl LocalAsset {
     }
 
     /// Computes filename from provided origin path
-    pub fn filename(origin_path: &str) -> Result<String> {
-        if let Some(filename) = Path::new(origin_path).file_name() {
-            if let Some(filename) = filename.to_str() {
-                Ok(filename.to_string())
-            } else {
-                Err(AxoassetError::LocalAssetMissingFilename {
-                    origin_path: origin_path.to_string(),
-                })
-            }
+    pub fn filename(origin_path: &Utf8Path) -> Result<String> {
+        if let Some(filename) = origin_path.file_name() {
+            Ok(filename.to_string())
         } else {
             Err(AxoassetError::LocalAssetMissingFilename {
                 origin_path: origin_path.to_string(),
@@ -274,38 +278,46 @@ impl LocalAsset {
     }
 
     /// Creates a new .tar.gz file from a provided directory
-    pub fn tar_gz_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
+    pub fn tar_gz_dir(
+        origin_dir: impl AsRef<Utf8Path>,
+        dest_dir: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
         tar_dir(
-            Utf8Path::new(origin_dir),
-            Utf8Path::new(dest_dir),
+            Utf8Path::new(origin_dir.as_ref()),
+            Utf8Path::new(dest_dir.as_ref()),
             &CompressionImpl::Gzip,
         )
     }
 
     /// Creates a new .tar.xz file from a provided directory
-    pub fn tar_xz_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
+    pub fn tar_xz_dir(
+        origin_dir: impl AsRef<Utf8Path>,
+        dest_dir: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
         tar_dir(
-            Utf8Path::new(origin_dir),
-            Utf8Path::new(dest_dir),
+            Utf8Path::new(origin_dir.as_ref()),
+            Utf8Path::new(dest_dir.as_ref()),
             &CompressionImpl::Xzip,
         )
     }
 
     /// Creates a new .tar.zstd file from a provided directory
-    pub fn tar_zstd_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
+    pub fn tar_zstd_dir(
+        origin_dir: impl AsRef<Utf8Path>,
+        dest_dir: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
         tar_dir(
-            Utf8Path::new(origin_dir),
-            Utf8Path::new(dest_dir),
+            Utf8Path::new(origin_dir.as_ref()),
+            Utf8Path::new(dest_dir.as_ref()),
             &CompressionImpl::Zstd,
         )
     }
 
     /// Creates a new .zip file from a provided directory
-    pub fn zip_dir(origin_dir: &str, dest_dir: &str) -> Result<()> {
-        zip_dir(Utf8Path::new(origin_dir), Utf8Path::new(dest_dir))
-    }
-
-    fn dest_path(&self, dest_dir: &str) -> Result<PathBuf> {
-        Ok(Path::new(dest_dir).join(&self.filename))
+    pub fn zip_dir(origin_dir: impl AsRef<Utf8Path>, dest_dir: impl AsRef<Utf8Path>) -> Result<()> {
+        zip_dir(
+            Utf8Path::new(origin_dir.as_ref()),
+            Utf8Path::new(dest_dir.as_ref()),
+        )
     }
 }

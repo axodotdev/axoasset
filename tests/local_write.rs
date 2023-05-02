@@ -17,7 +17,7 @@ fn it_writes_a_new_file_from_string() {
     assert!(dest_file.exists());
 
     let loaded_contents =
-        axoasset::LocalAsset::load_string(&dest_file.display().to_string()).unwrap();
+        axoasset::LocalAsset::load_string(dest_file.display().to_string()).unwrap();
     assert!(loaded_contents.contains(contents));
 }
 
