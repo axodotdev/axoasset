@@ -103,32 +103,40 @@ impl LocalAsset {
         }
     }
 
-    /// Writes an asset to a path on the local filesystem, determines the
-    /// filename from the origin path
-    pub fn write_new(contents: &str, filename: &str, dest_dir: &str) -> Result<PathBuf> {
-        let dest_path = Path::new(dest_dir).join(filename);
+    /// Writes an asset to a path on the local filesystem
+    pub fn write_new(contents: &str, dest_path: &str) -> Result<PathBuf> {
+        if Path::new(dest_path).file_name().is_none() {
+            return Err(AxoassetError::LocalAssetMissingFilename {
+                origin_path: dest_path.to_string(),
+            });
+        }
         match fs::write(&dest_path, contents) {
-            Ok(_) => Ok(dest_path),
+            Ok(_) => Ok(dest_path.into()),
             Err(details) => Err(AxoassetError::LocalAssetWriteNewFailed {
-                dest_path: dest_path.display().to_string(),
+                dest_path: dest_path.to_string(),
                 details,
             }),
         }
     }
 
     /// Writes an asset and all of its parent directories on the local filesystem.
-    pub fn write_new_all(contents: &str, filename: &str, dest_dir: &str) -> Result<PathBuf> {
-        let dest_path = Path::new(dest_dir).join(filename);
+    pub fn write_new_all(contents: &str, dest_path: &str) -> Result<PathBuf> {
+        if Path::new(dest_path).file_name().is_none() {
+            return Err(AxoassetError::LocalAssetMissingFilename {
+                origin_path: dest_path.to_string(),
+            });
+        }
+        let dest_dir = Path::new(dest_path).parent().unwrap();
         match fs::create_dir_all(dest_dir) {
             Ok(_) => (),
             Err(details) => {
                 return Err(AxoassetError::LocalAssetWriteNewFailed {
-                    dest_path: dest_path.display().to_string(),
+                    dest_path: dest_path.to_string(),
                     details,
                 })
             }
         }
-        LocalAsset::write_new(contents, filename, dest_dir)
+        LocalAsset::write_new(contents, dest_path)
     }
 
     /// Creates a new directory

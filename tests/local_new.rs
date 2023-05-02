@@ -37,12 +37,12 @@ async fn it_creates_new_assets() {
 fn it_creates_parent_directories() {
     let dest = assert_fs::TempDir::new().unwrap();
 
-    let dest_dir = Path::new(&dest.as_os_str())
+    let dest_path = Path::new(&dest.as_os_str())
         .join("subdir")
         .join("test.md")
         .display()
         .to_string();
-    axoasset::LocalAsset::write_new_all("file content", "index.md", &dest_dir).unwrap();
+    axoasset::LocalAsset::write_new_all("file content", &dest_path).unwrap();
 
     assert!(Path::new(&dest.as_os_str()).join("subdir").exists());
 }
