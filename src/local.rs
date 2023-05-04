@@ -285,7 +285,7 @@ impl LocalAsset {
         crate::compression::tar_dir(
             Utf8Path::new(origin_dir.as_ref()),
             Utf8Path::new(dest_dir.as_ref()),
-            &crate::compression:CompressionImpl::Gzip,
+            &crate::compression::CompressionImpl::Gzip,
         )
     }
 
