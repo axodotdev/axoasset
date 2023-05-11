@@ -168,7 +168,7 @@ impl RemoteAsset {
     //
     // A large portion of the origin path is preserved in the filename to help
     // avoid name conflicts, but this is a half measure at best and leaves a
-    // lot of room for improvment.
+    // lot of room for improvement.
     fn filename(origin_path: &str, headers: &reqwest::header::HeaderMap) -> Result<String> {
         let mut filestem = url::Url::parse(origin_path)?
             .path()

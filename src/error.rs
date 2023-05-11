@@ -113,7 +113,7 @@ pub enum AxoassetError {
     },
 
     /// This error indicates that the requested remote asset was an image, but
-    /// axoasset could not determine what file extenstion to use for the
+    /// axoasset could not determine what file extension to use for the
     /// received format.
     #[error("when fetching asset at {origin_path}, we could not determine an appropriate file extension based on the server response")]
     #[diagnostic(help(
@@ -222,7 +222,7 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to write a new asset
     #[error("failed to write a new asset to {dest_path}.")]
-    #[diagnostic(help("Make sure you have the correct permissons to create a new file."))]
+    #[diagnostic(help("Make sure you have the correct permissions to create a new file."))]
     LocalAssetWriteNewFailed {
         /// The path where the asset was being written to
         dest_path: String,
