@@ -1,5 +1,41 @@
 # Changelog
 
+## v0.3.0 - 2023-05-23
+
+### 🎁 Features
+
+- **SourceFile::deserialize_toml_edit (behind new toml-edit feature) - [Gankra], [pr52]**
+
+  Just a convenience to read a SourceFile as toml-edit and map the error spans to the right format.
+
+### 🛠️ Fixes
+
+- **Separate compression into cargo features - [shadows-withal], [pr47]**
+
+  The APIs for processing tarballs/zips are now behind "compression-tar" and "compression-zip",
+  with a convenience "compression" feature that covers both.
+
+- **LocalAsset API cleanup - [shadows-withal], [pr48]**
+
+  Some breaking cleanups to APIs to make them more ergonomic longterm
+
+  - Many APIs that previously took Strings now take `AsRef<Utf8Path>`
+  - write_new_{all} now just takes a path to the file, instead of folder_path + name 
+
+- **update github CI - [striezel], [pr50]**
+
+  Updating several old Github CI actions to more modern/maintained versions, thanks a ton!
+
+* **fix typos - [striezel], [pr51]**
+
+  Thanks!!
+
+[pr47]: https://github.com/axodotdev/axoasset/pull/47
+[pr48]: https://github.com/axodotdev/axoasset/pull/48
+[pr50]: https://github.com/axodotdev/axoasset/pull/50
+[pr51]: https://github.com/axodotdev/axoasset/pull/51
+[pr52]: https://github.com/axodotdev/axoasset/pull/52
+
 ## v0.2.0 - 2023-04-27
 
 ### 🎁 Features
@@ -145,3 +181,4 @@ Initial release.
 [ashleygwilliams]: https://github.com/ashleygwilliams
 [gankra]: https://github.com/gankra
 [shadows-withal]: https://github.com/shadows-withal
+[striezel]: https://github.com/striezel
