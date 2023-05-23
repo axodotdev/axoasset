@@ -333,4 +333,20 @@ pub enum AxoassetError {
         #[source]
         details: toml::de::Error,
     },
+
+    /// This error indicates we tried to deserialize some TOML with toml_edit
+    /// but failed.
+    #[cfg(feature = "toml-edit")]
+    #[error("failed to edit TOML document")]
+    TomlEdit {
+        /// The SourceFile we were trying to parse
+        #[source_code]
+        source: crate::SourceFile,
+        /// The range the error was found on
+        #[label]
+        span: Option<miette::SourceSpan>,
+        /// Details of the error
+        #[source]
+        details: toml_edit::TomlError,
+    },
 }
