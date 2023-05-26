@@ -161,7 +161,7 @@ impl SourceFile {
         let line_offset = line_addr.checked_sub(src_addr)?;
         let start = line_offset.checked_add(col)?.checked_sub(1)?;
         let end = start.checked_add(1)?;
-        if start > end || end >= src.len() {
+        if start > end || end > src.len() {
             return None;
         }
         Some(SourceSpan::from(start..end))
