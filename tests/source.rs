@@ -57,6 +57,8 @@ fn json_valid() {
 #[cfg(feature = "json-serde")]
 #[test]
 fn json_invalid() {
+    use axoasset::AxoassetError;
+
     #[derive(serde::Deserialize, PartialEq, Eq, Debug)]
     struct MyType {
         hello: String,
@@ -70,6 +72,9 @@ fn json_invalid() {
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let res = source.deserialize_json::<MyType>();
     assert!(res.is_err());
+    let Err(AxoassetError::Json{ span: Some(_), .. }) = res else {
+        panic!("span was invalid");
+    };
 }
 
 #[cfg(feature = "toml-serde")]
@@ -104,6 +109,8 @@ goodbye = true
 #[cfg(feature = "toml-serde")]
 #[test]
 fn toml_invalid() {
+    use axoasset::AxoassetError;
+
     #[derive(serde::Deserialize, PartialEq, Eq, Debug)]
     struct MyType {
         hello: String,
@@ -122,6 +129,9 @@ goodbye =
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let res = source.deserialize_toml::<MyType>();
     assert!(res.is_err());
+    let Err(AxoassetError::Toml{ span: Some(_), .. }) = res else {
+        panic!("span was invalid");
+    };
 }
 
 #[cfg(feature = "toml-edit")]
@@ -145,6 +155,8 @@ goodbye = true
 #[cfg(feature = "toml-edit")]
 #[test]
 fn toml_edit_invalid() {
+    use axoasset::AxoassetError;
+
     // Make the file
     let contents = String::from(
         r##"
@@ -157,4 +169,7 @@ goodbye =
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let res = source.deserialize_toml_edit();
     assert!(res.is_err());
+    let Err(AxoassetError::TomlEdit{ span: Some(_), .. }) = res else {
+        panic!("span was invalid");
+    };
 }
