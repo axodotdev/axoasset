@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.4.0 - 2023-07-04
+
+###  🎁 Features
+
+- **Don't use OpenSSL - [Gankra], [pr56]**
+
+### 🛠️  Fixes
+
+- **Don't reject spans that cover the last char - [Gankra], [pr55]**
+
+[pr55]: https://github.com/axodotdev/axoasset/pull/55
+[pr56]: https://github.com/axodotdev/axoasset/pull/56
+
 ## v0.3.0 - 2023-05-23
 
 ### 🎁 Features
