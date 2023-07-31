@@ -1,8 +1,6 @@
 //! Compression-related methods, all used in `axoasset::Local`
 
-use crate::error::*;
 use camino::Utf8Path;
-use std::fs;
 
 /// Internal tar-file compression algorithms
 #[cfg(feature = "compression-tar")]
@@ -20,15 +18,20 @@ pub(crate) enum CompressionImpl {
 pub(crate) fn tar_dir(
     src_path: &Utf8Path,
     dest_path: &Utf8Path,
+    with_root: Option<&Utf8Path>,
     compression: &CompressionImpl,
-) -> Result<()> {
+) -> crate::error::Result<()> {
+    use crate::error::*;
     use flate2::{write::ZlibEncoder, Compression, GzBuilder};
+    use std::fs;
     use xz2::write::XzEncoder;
 
     // Set up the archive/compression
-    // The contents of the zip (e.g. a tar)
-    let dir_name = src_path.file_name().unwrap();
-    let zip_contents_name = format!("{dir_name}.tar");
+    // dir_name here is a prefix directory/path that the src dir's contents will be stored
+    // under when being tarred. Having it be empty means the contents
+    // will be placed in the root of the tarball.
+    let dir_name = with_root.unwrap_or_else(|| Utf8Path::new(""));
+    let zip_contents_name = format!("{}.tar", dest_path.file_name().unwrap());
     let final_zip_file = match fs::File::create(dest_path) {
         Ok(file) => file,
         Err(details) => {
@@ -154,78 +157,70 @@ pub(crate) fn tar_dir(
 }
 
 #[cfg(feature = "compression-zip")]
-pub(crate) fn zip_dir(src_path: &Utf8Path, dest_path: &Utf8Path) -> Result<()> {
-    use zip::ZipWriter;
-
-    // Set up the archive/compression
-    let final_zip_file = match fs::File::create(dest_path) {
-        Ok(file) => file,
-        Err(details) => {
-            return Err(AxoassetError::LocalAssetWriteNewFailed {
-                dest_path: dest_path.to_string(),
-                details,
-            })
-        }
+pub(crate) fn zip_dir(
+    src_path: &Utf8Path,
+    dest_path: &Utf8Path,
+    with_root: Option<&Utf8Path>,
+) -> zip::result::ZipResult<()> {
+    use std::{
+        fs::File,
+        io::{Read, Write},
     };
+    use zip::{result::ZipError, write::FileOptions, CompressionMethod};
 
-    // Wrap our file in compression
-    let mut zip = ZipWriter::new(final_zip_file);
+    let file = File::create(dest_path)?;
 
-    let dir = match std::fs::read_dir(src_path) {
-        Ok(dir) => dir,
-        Err(details) => {
-            return Err(AxoassetError::LocalAssetReadFailed {
-                origin_path: src_path.to_string(),
-                details,
-            })
-        }
-    };
+    // The `zip` crate lacks the conveniences of the `tar` crate so we need to manually
+    // walk through all the subdirs of `src_path` and copy each entry. walkdir streamlines
+    // that process for us.
+    let walkdir = walkdir::WalkDir::new(src_path);
+    let it = walkdir.into_iter();
 
-    for entry in dir {
-        if let Err(details) = copy_into_zip(entry, &mut zip) {
-            return Err(AxoassetError::LocalAssetArchive {
-                reason: format!("failed to create file in zip: {dest_path}"),
-                details,
-            });
+    let mut zip = zip::ZipWriter::new(file);
+    let options = FileOptions::default().compression_method(CompressionMethod::STORE);
+
+    // If there's a root prefix, add entries for all of its components
+    if let Some(root) = with_root {
+        for path in root.ancestors() {
+            if !path.as_str().is_empty() {
+                zip.add_directory(path.as_str(), options)?;
+            }
         }
     }
 
-    // Finish up the compression
-    let _zip_file = match zip.finish() {
-        Ok(file) => file,
-        Err(details) => {
-            return Err(AxoassetError::LocalAssetArchive {
-                reason: format!("failed to write archive: {dest_path}"),
-                details: details.into(),
-            })
+    let mut buffer = Vec::new();
+    for entry in it.filter_map(|e| e.ok()) {
+        let path = entry.path();
+        // Get the relative path of this file/dir that will be used in the zip
+        let Some(name) = path
+            .strip_prefix(src_path)
+            .ok()
+            .and_then(Utf8Path::from_path)
+        else {
+            return Err(ZipError::UnsupportedArchive("unsupported path format"));
+        };
+        // Optionally apply the root prefix
+        let name = if let Some(root) = with_root {
+            root.join(name)
+        } else {
+            name.to_owned()
+        };
+
+        // Write file or directory explicitly
+        // Some unzip tools unzip files with directory paths correctly, some do not!
+        if path.is_file() {
+            zip.start_file(name, options)?;
+            let mut f = File::open(path)?;
+
+            f.read_to_end(&mut buffer)?;
+            zip.write_all(&buffer)?;
+            buffer.clear();
+        } else if !name.as_str().is_empty() {
+            // Only if not root! Avoids path spec / warning
+            // and mapname conversion failed error on unzip
+            zip.add_directory(name, options)?;
         }
-    };
-    // Drop the file to close it
-    Ok(())
-}
-
-/// Copies a file into a provided `ZipWriter`. Mostly factored out so that we can bunch up
-/// a bunch of `std::io::Error`s without having to individually handle them.
-#[cfg(feature = "compression-zip")]
-fn copy_into_zip(
-    entry: std::result::Result<std::fs::DirEntry, std::io::Error>,
-    zip: &mut zip::ZipWriter<fs::File>,
-) -> std::result::Result<(), std::io::Error> {
-    use std::io::{self, BufReader};
-    use zip::{write::FileOptions, CompressionMethod};
-
-    let entry = entry?;
-    if entry.file_type()?.is_file() {
-        let options = FileOptions::default().compression_method(CompressionMethod::Stored);
-        let file = fs::File::open(entry.path())?;
-        let mut buf = BufReader::new(file);
-        let file_name = entry.file_name();
-        // FIXME: ...don't do this lossy conversion?
-        let utf8_file_name = file_name.to_string_lossy();
-        zip.start_file(utf8_file_name.clone(), options)?;
-        io::copy(&mut buf, zip)?;
-    } else {
-        todo!("implement zip subdirs! (or was this a symlink?)");
     }
+    zip.finish()?;
     Ok(())
 }

@@ -277,50 +277,85 @@ impl LocalAsset {
     }
 
     /// Creates a new .tar.gz file from a provided directory
+    ///
+    /// The with_root argument specifies that all contents of dest_dir should be placed
+    /// under the given path within the archive. If None then the contents of the dir will
+    /// be placed directly in the root. root_dir can be a proper path with subdirs
+    /// (e.g. `root_dir = "some/dir/prefix"` is valid).
     #[cfg(any(feature = "compression", feature = "compression-tar"))]
     pub fn tar_gz_dir(
         origin_dir: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
+        with_root: Option<impl AsRef<Utf8Path>>,
     ) -> Result<()> {
         crate::compression::tar_dir(
             Utf8Path::new(origin_dir.as_ref()),
             Utf8Path::new(dest_dir.as_ref()),
+            with_root.as_ref().map(|p| p.as_ref()),
             &crate::compression::CompressionImpl::Gzip,
         )
     }
 
     /// Creates a new .tar.xz file from a provided directory
+    ///
+    /// The with_root argument specifies that all contents of dest_dir should be placed
+    /// under the given path within the archive. If None then the contents of the dir will
+    /// be placed directly in the root. root_dir can be a proper path with subdirs
+    /// (e.g. `root_dir = "some/dir/prefix"` is valid).
     #[cfg(any(feature = "compression", feature = "compression-tar"))]
     pub fn tar_xz_dir(
         origin_dir: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
+        with_root: Option<impl AsRef<Utf8Path>>,
     ) -> Result<()> {
         crate::compression::tar_dir(
             Utf8Path::new(origin_dir.as_ref()),
             Utf8Path::new(dest_dir.as_ref()),
+            with_root.as_ref().map(|p| p.as_ref()),
             &crate::compression::CompressionImpl::Xzip,
         )
     }
 
     /// Creates a new .tar.zstd file from a provided directory
+    ///
+    /// The with_root argument specifies that all contents of dest_dir should be placed
+    /// under the given path within the archive. If None then the contents of the dir will
+    /// be placed directly in the root. root_dir can be a proper path with subdirs
+    /// (e.g. `root_dir = "some/dir/prefix"` is valid).
     #[cfg(any(feature = "compression", feature = "compression-tar"))]
     pub fn tar_zstd_dir(
         origin_dir: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
+        with_root: Option<impl AsRef<Utf8Path>>,
     ) -> Result<()> {
         crate::compression::tar_dir(
             Utf8Path::new(origin_dir.as_ref()),
             Utf8Path::new(dest_dir.as_ref()),
+            with_root.as_ref().map(|p| p.as_ref()),
             &crate::compression::CompressionImpl::Zstd,
         )
     }
 
     /// Creates a new .zip file from a provided directory
+    ///
+    /// The with_root argument specifies that all contents of dest_dir should be placed
+    /// under the given path within the archive. If None then the contents of the dir will
+    /// be placed directly in the root. root_dir can be a proper path with subdirs
+    /// (e.g. `root_dir = "some/dir/prefix"` is valid).
     #[cfg(any(feature = "compression", feature = "compression-zip"))]
-    pub fn zip_dir(origin_dir: impl AsRef<Utf8Path>, dest_dir: impl AsRef<Utf8Path>) -> Result<()> {
+    pub fn zip_dir(
+        origin_dir: impl AsRef<Utf8Path>,
+        dest_dir: impl AsRef<Utf8Path>,
+        with_root: Option<impl AsRef<Utf8Path>>,
+    ) -> Result<()> {
         crate::compression::zip_dir(
             Utf8Path::new(origin_dir.as_ref()),
             Utf8Path::new(dest_dir.as_ref()),
+            with_root.as_ref().map(|p| p.as_ref()),
         )
+        .map_err(|e| AxoassetError::LocalAssetArchive {
+            reason: format!("failed to write tar: {}", dest_dir.as_ref()),
+            details: e.into(),
+        })
     }
 }
