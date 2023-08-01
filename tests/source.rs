@@ -72,7 +72,7 @@ fn json_invalid() {
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let res = source.deserialize_json::<MyType>();
     assert!(res.is_err());
-    let Err(AxoassetError::Json{ span: Some(_), .. }) = res else {
+    let Err(AxoassetError::Json { span: Some(_), .. }) = res else {
         panic!("span was invalid");
     };
 }
@@ -129,7 +129,7 @@ goodbye =
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let res = source.deserialize_toml::<MyType>();
     assert!(res.is_err());
-    let Err(AxoassetError::Toml{ span: Some(_), .. }) = res else {
+    let Err(AxoassetError::Toml { span: Some(_), .. }) = res else {
         panic!("span was invalid");
     };
 }
@@ -169,7 +169,7 @@ goodbye =
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let res = source.deserialize_toml_edit();
     assert!(res.is_err());
-    let Err(AxoassetError::TomlEdit{ span: Some(_), .. }) = res else {
+    let Err(AxoassetError::TomlEdit { span: Some(_), .. }) = res else {
         panic!("span was invalid");
     };
 }
