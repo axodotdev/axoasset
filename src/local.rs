@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use camino::{Utf8Path, Utf8PathBuf};
 
-use crate::error::*;
+use crate::{dirs, error::*};
 
 /// A local asset contains a path on the local filesystem and its contents
 #[derive(Debug)]
@@ -212,12 +212,97 @@ impl LocalAsset {
         Ok(())
     }
 
-    /// Copies an asset from one location on the local filesystem to another
+    /// Copies an asset from one location on the local filesystem to the given directory
+    ///
+    /// The destination will use the same file name as the origin has.
+    /// If you want to specify the destination file's name, use [`LocalAsset::copy_named`][].
+    ///
+    /// The returned path is the resulting file.
     pub fn copy(
         origin_path: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
-    ) -> Result<PathBuf> {
-        LocalAsset::load(origin_path)?.write(dest_dir)
+    ) -> Result<Utf8PathBuf> {
+        let origin_path = origin_path.as_ref();
+        let dest_dir = dest_dir.as_ref();
+
+        let filename = Self::filename(origin_path)?;
+        let dest_path = dest_dir.join(filename);
+        Self::copy_named(origin_path, &dest_path)?;
+
+        Ok(dest_path)
+    }
+
+    /// Copies an asset from one location on the local filesystem to another
+    ///
+    /// Both paths are assumed to be file names.
+    pub fn copy_named(
+        origin_path: impl AsRef<Utf8Path>,
+        dest_path: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
+        let origin_path = origin_path.as_ref();
+        let dest_path = dest_path.as_ref();
+
+        fs::copy(origin_path, dest_path).map_err(|e| AxoassetError::LocalAssetCopyFailed {
+            origin_path: origin_path.to_string(),
+            dest_path: dest_path.to_string(),
+            details: e,
+        })?;
+
+        Ok(())
+    }
+
+    /// Recursively copies a directory from one location to the given directory
+    ///
+    /// The destination will use the same dir name as the origin has, so
+    /// dest_dir is the *parent* of the copied directory. If you want to specify the destination's
+    /// dir name, use [`LocalAsset::copy_dir_named`][].
+    ///
+    /// The returned path is the resulting dir.
+    pub fn copy_dir(
+        origin_path: impl AsRef<Utf8Path>,
+        dest_dir: impl AsRef<Utf8Path>,
+    ) -> Result<Utf8PathBuf> {
+        let origin_path = origin_path.as_ref();
+        let dest_dir = dest_dir.as_ref();
+
+        let filename = Self::filename(origin_path)?;
+        let dest_path = dest_dir.join(filename);
+        Self::copy_dir_named(origin_path, &dest_path)?;
+
+        Ok(dest_path)
+    }
+
+    /// Recursively copies a directory from one location to another
+    ///
+    /// Both paths are assumed to be the names of the directory being copied
+    /// (i.e. dest_path is not the parent dir).
+    pub fn copy_dir_named(
+        origin_path: impl AsRef<Utf8Path>,
+        dest_path: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
+        let origin_path = origin_path.as_ref();
+        let dest_path = dest_path.as_ref();
+
+        for entry in dirs::walk_dir(origin_path) {
+            let entry = entry?;
+            let from = &entry.full_path;
+            let to = dest_path.join(&entry.rel_path);
+
+            if entry.file_type().is_dir() {
+                // create directories (even empty ones!)
+                LocalAsset::create_dir(to)?;
+            } else if entry.file_type().is_file() {
+                // copy files
+                LocalAsset::copy_named(from, to)?;
+            } else {
+                // other kinds of file presumed to be symlinks which we don't handle
+                debug_assert!(
+                    entry.file_type().is_symlink(),
+                    "unknown type of file at {from}, axoasset needs to be updated to support this!"
+                );
+            }
+        }
+        Ok(())
     }
 
     /// Get the current working directory

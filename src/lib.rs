@@ -13,6 +13,7 @@ use std::path::PathBuf;
 
 #[cfg(any(feature = "compression-zip", feature = "compression-tar"))]
 pub(crate) mod compression;
+pub(crate) mod dirs;
 pub(crate) mod error;
 pub(crate) mod local;
 #[cfg(feature = "remote")]
@@ -20,6 +21,7 @@ pub(crate) mod remote;
 pub(crate) mod source;
 pub(crate) mod spanned;
 
+use camino::Utf8PathBuf;
 pub use error::AxoassetError;
 use error::Result;
 pub use local::LocalAsset;
@@ -83,7 +85,7 @@ impl Asset {
 
     /// Copies an asset, returning the path to the copy destination on the
     /// local filesystem.
-    pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
+    pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<Utf8PathBuf> {
         #[cfg(feature = "remote")]
         if is_remote(origin_path)? {
             return RemoteAsset::copy(origin_path, dest_dir).await;

@@ -292,6 +292,16 @@ pub enum AxoassetError {
         /// The problematic path
         path: std::path::PathBuf,
     },
+    /// This error indicates we tried to strip_prefix a path that should have been
+    /// a descendant of another, but it didn't work.
+    #[error("Child wasn't nested under its parent: {root_dir} => {child_dir}")]
+    #[diagnostic(help("Are symlinks involved?"))]
+    PathNesting {
+        /// The root/ancestor dir
+        root_dir: camino::Utf8PathBuf,
+        /// THe child/descendent path
+        child_dir: camino::Utf8PathBuf,
+    },
 
     #[error("Failed to find {desired_filename} in an ancestor of {start_dir}")]
     /// This error indicates we failed to find the desired file in an ancestor of the search dir.
@@ -300,6 +310,16 @@ pub enum AxoassetError {
         start_dir: camino::Utf8PathBuf,
         /// The filename we were searching for
         desired_filename: String,
+    },
+
+    #[error("Failed to walk to ancestor of {origin_path}")]
+    /// Walkdir failed to yield an entry
+    WalkDirFailed {
+        /// The root path we were trying to walkdirs
+        origin_path: camino::Utf8PathBuf,
+        /// Inner walkdir error
+        #[source]
+        details: walkdir::Error,
     },
 
     /// This error indicates we tried to deserialize some JSON with serde_json
