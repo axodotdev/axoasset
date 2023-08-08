@@ -1,8 +1,31 @@
 # Changelog
 
+### v0.5.0 - 2023-08-08
+
+### 🎁 Features
+
+- **Add a with_root argument to compression methods - [Gankra], [pr61]**
+
+  The compression methods take a path to a directory to tar/zip up. The
+  with_root argument specifies a root prefix of directories that the
+  archive's contents should be nested under. If None then the dir's contents
+  are flattened into the root of the archive.
+
+  e.g. to make a tar.gz that matches the npm package format (which
+  wants the tarball to contain a dir named "package"), you can 
+  compress: `"path/to/contents/", Some("package")`
+
+- **Add more copying APIs to LocalAsset - [Gankra], [pr62]**
+
+  LocalAsset now includes `copy_named`, `copy_dir`, and `copy_dir_named`.
+  All `copy` functions were change to return a `Utf8PathBuf` instead of a `PathBuf`.
+
+[pr61]: https://github.com/axodotdev/axoasset/pull/61
+[pr62]: https://github.com/axodotdev/axoasset/pull/62
+
 ## v0.4.0 - 2023-07-04
 
-###  🎁 Features
+### 🎁 Features
 
 - **Don't use OpenSSL - [Gankra], [pr56]**
 
