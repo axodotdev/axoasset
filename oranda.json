@@ -1,3 +1,5 @@
 {
-  "path_prefix": "axoasset"
+  "build": {
+    "path_prefix": "axoasset"
+  }
 }
