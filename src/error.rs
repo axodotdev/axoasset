@@ -188,7 +188,7 @@ pub enum AxoassetError {
         dest_path: String,
         /// Details of the error
         #[source]
-        details: std::io::Error,
+        details: Option<std::io::Error>,
     },
 
     /// This error indicates that axoasset failed to read a local asset at the

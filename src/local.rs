@@ -212,12 +212,104 @@ impl LocalAsset {
         Ok(())
     }
 
-    /// Copies an asset from one location on the local filesystem to another
+    /// Copies an asset from one location on the local filesystem to the given directory
+    ///
+    /// The destination will use the same file name as the origin has.
+    /// If you want to specify the destination file's name, use [`LocalAsset::copy_named`][].
     pub fn copy(
         origin_path: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
     ) -> Result<PathBuf> {
         LocalAsset::load(origin_path)?.write(dest_dir)
+    }
+
+    /// Copies an asset from one location on the local filesystem to another
+    ///
+    /// Both paths are assumed to be file names.
+    pub fn copy_named(
+        origin_path: impl AsRef<Utf8Path>,
+        dest_path: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
+        let origin_path = origin_path.as_ref();
+        let dest_path = dest_path.as_ref();
+
+        fs::copy(origin_path, dest_path).map_err(|e| AxoassetError::LocalAssetCopyFailed {
+            origin_path: origin_path.to_string(),
+            dest_path: dest_path.to_string(),
+            details: Some(e),
+        })?;
+
+        Ok(())
+    }
+
+    /// Recursively copies a directory from one location to the given directory
+    ///
+    /// The destination will use the same dir name as the origin has, so
+    /// dest_dir is the *parent* of the copied directory. If you want to specify the destination's
+    /// dir name, use [`LocalAsset::copy_dir_named`][].
+    pub fn copy_dir(
+        origin_path: impl AsRef<Utf8Path>,
+        dest_dir: impl AsRef<Utf8Path>,
+    ) -> Result<Utf8PathBuf> {
+        let origin_path = origin_path.as_ref();
+        let dest_dir = dest_dir.as_ref();
+
+        let filename = Self::filename(origin_path)?;
+        let dest_path = dest_dir.join(filename);
+        Self::copy_dir_named(origin_path, &dest_path)?;
+        Ok(dest_path)
+    }
+
+    /// Recursively copies a directory from one location to another
+    ///
+    /// Both paths are assumed to be the names of the directory being copied
+    /// (i.e. dest_path is not the parent dir).
+    pub fn copy_dir_named(
+        origin_path: impl AsRef<Utf8Path>,
+        dest_path: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
+        let origin_path = origin_path.as_ref();
+        let dest_path = dest_path.as_ref();
+
+        for entry in walkdir::WalkDir::new(origin_path) {
+            let entry = entry.map_err(|e| AxoassetError::LocalAssetCopyFailed {
+                origin_path: origin_path.to_string(),
+                dest_path: dest_path.to_string(),
+                details: e.into_io_error(),
+            })?;
+
+            let from = Utf8PathBuf::from_path_buf(entry.path().to_owned())
+                .map_err(|details| AxoassetError::Utf8Path { path: details })?;
+            let suffix = from.strip_prefix(origin_path).map_err(|_| {
+                AxoassetError::LocalAssetCopyFailed {
+                    origin_path: origin_path.to_string(),
+                    dest_path: dest_path.to_string(),
+                    details: None,
+                }
+            })?;
+            let to = dest_path.join(suffix);
+
+            if entry.file_type().is_dir() {
+                // create directories (even empty ones!)
+                if let Err(e) = fs::create_dir(to) {
+                    match e.kind() {
+                        std::io::ErrorKind::AlreadyExists => {}
+                        _ => {
+                            return Err(AxoassetError::LocalAssetCopyFailed {
+                                origin_path: origin_path.to_string(),
+                                dest_path: dest_path.to_string(),
+                                details: Some(e),
+                            })
+                        }
+                    }
+                }
+            } else if entry.file_type().is_file() {
+                // copy files
+                LocalAsset::copy_named(from, to)?;
+            }
+            // other kinds of file presumed to be symlinks which we don't handle
+        }
+        Ok(())
     }
 
     /// Get the current working directory
