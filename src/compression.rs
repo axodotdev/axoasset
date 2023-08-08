@@ -166,14 +166,14 @@ pub(crate) fn zip_dir(
         fs::File,
         io::{Read, Write},
     };
-    use zip::{result::ZipError, write::FileOptions, CompressionMethod};
+    use zip::{write::FileOptions, CompressionMethod};
 
     let file = File::create(dest_path)?;
 
     // The `zip` crate lacks the conveniences of the `tar` crate so we need to manually
     // walk through all the subdirs of `src_path` and copy each entry. walkdir streamlines
     // that process for us.
-    let walkdir = walkdir::WalkDir::new(src_path);
+    let walkdir = crate::dirs::walk_dir(src_path);
     let it = walkdir.into_iter();
 
     let mut zip = zip::ZipWriter::new(file);
@@ -190,15 +190,8 @@ pub(crate) fn zip_dir(
 
     let mut buffer = Vec::new();
     for entry in it.filter_map(|e| e.ok()) {
-        let path = entry.path();
-        // Get the relative path of this file/dir that will be used in the zip
-        let Some(name) = path
-            .strip_prefix(src_path)
-            .ok()
-            .and_then(Utf8Path::from_path)
-        else {
-            return Err(ZipError::UnsupportedArchive("unsupported path format"));
-        };
+        let name = &entry.rel_path;
+        let path = &entry.full_path;
         // Optionally apply the root prefix
         let name = if let Some(root) = with_root {
             root.join(name)

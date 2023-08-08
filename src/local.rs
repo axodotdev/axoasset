@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use camino::{Utf8Path, Utf8PathBuf};
 
-use crate::error::*;
+use crate::{dirs, error::*};
 
 /// A local asset contains a path on the local filesystem and its contents
 #[derive(Debug)]
@@ -216,11 +216,20 @@ impl LocalAsset {
     ///
     /// The destination will use the same file name as the origin has.
     /// If you want to specify the destination file's name, use [`LocalAsset::copy_named`][].
+    ///
+    /// The returned path is the resulting file.
     pub fn copy(
         origin_path: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
-    ) -> Result<PathBuf> {
-        LocalAsset::load(origin_path)?.write(dest_dir)
+    ) -> Result<Utf8PathBuf> {
+        let origin_path = origin_path.as_ref();
+        let dest_dir = dest_dir.as_ref();
+
+        let filename = Self::filename(origin_path)?;
+        let dest_path = dest_dir.join(filename);
+        Self::copy_named(origin_path, &dest_path)?;
+
+        Ok(dest_path)
     }
 
     /// Copies an asset from one location on the local filesystem to another
@@ -236,7 +245,7 @@ impl LocalAsset {
         fs::copy(origin_path, dest_path).map_err(|e| AxoassetError::LocalAssetCopyFailed {
             origin_path: origin_path.to_string(),
             dest_path: dest_path.to_string(),
-            details: Some(e),
+            details: e,
         })?;
 
         Ok(())
@@ -247,6 +256,8 @@ impl LocalAsset {
     /// The destination will use the same dir name as the origin has, so
     /// dest_dir is the *parent* of the copied directory. If you want to specify the destination's
     /// dir name, use [`LocalAsset::copy_dir_named`][].
+    ///
+    /// The returned path is the resulting dir.
     pub fn copy_dir(
         origin_path: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
@@ -257,6 +268,7 @@ impl LocalAsset {
         let filename = Self::filename(origin_path)?;
         let dest_path = dest_dir.join(filename);
         Self::copy_dir_named(origin_path, &dest_path)?;
+
         Ok(dest_path)
     }
 
@@ -271,38 +283,14 @@ impl LocalAsset {
         let origin_path = origin_path.as_ref();
         let dest_path = dest_path.as_ref();
 
-        for entry in walkdir::WalkDir::new(origin_path) {
-            let entry = entry.map_err(|e| AxoassetError::LocalAssetCopyFailed {
-                origin_path: origin_path.to_string(),
-                dest_path: dest_path.to_string(),
-                details: e.into_io_error(),
-            })?;
-
-            let from = Utf8PathBuf::from_path_buf(entry.path().to_owned())
-                .map_err(|details| AxoassetError::Utf8Path { path: details })?;
-            let suffix = from.strip_prefix(origin_path).map_err(|_| {
-                AxoassetError::LocalAssetCopyFailed {
-                    origin_path: origin_path.to_string(),
-                    dest_path: dest_path.to_string(),
-                    details: None,
-                }
-            })?;
-            let to = dest_path.join(suffix);
+        for entry in dirs::walk_dir(origin_path) {
+            let entry = entry?;
+            let from = &entry.full_path;
+            let to = dest_path.join(&entry.rel_path);
 
             if entry.file_type().is_dir() {
                 // create directories (even empty ones!)
-                if let Err(e) = fs::create_dir(to) {
-                    match e.kind() {
-                        std::io::ErrorKind::AlreadyExists => {}
-                        _ => {
-                            return Err(AxoassetError::LocalAssetCopyFailed {
-                                origin_path: origin_path.to_string(),
-                                dest_path: dest_path.to_string(),
-                                details: Some(e),
-                            })
-                        }
-                    }
-                }
+                LocalAsset::create_dir(to)?;
             } else if entry.file_type().is_file() {
                 // copy files
                 LocalAsset::copy_named(from, to)?;

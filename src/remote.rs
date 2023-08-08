@@ -1,6 +1,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use camino::{Utf8Path, Utf8PathBuf};
+
 use crate::error::*;
 
 /// A remote asset is an asset that is fetched over the network.
@@ -60,15 +62,15 @@ impl RemoteAsset {
     }
 
     /// Copies an asset to the local filesystem.
-    pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<PathBuf> {
+    pub async fn copy(origin_path: &str, dest_dir: &str) -> Result<Utf8PathBuf> {
         match RemoteAsset::load(origin_path).await {
             Ok(a) => {
-                let dest_path = Path::new(dest_dir).join(a.filename);
+                let dest_path = Utf8Path::new(dest_dir).join(a.filename);
                 match fs::write(&dest_path, a.contents) {
                     Ok(_) => Ok(dest_path),
                     Err(details) => Err(AxoassetError::RemoteAssetWriteFailed {
                         origin_path: origin_path.to_string(),
-                        dest_path: dest_path.display().to_string(),
+                        dest_path: dest_path.to_string(),
                         details,
                     }),
                 }
