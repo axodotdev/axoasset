@@ -294,8 +294,13 @@ impl LocalAsset {
             } else if entry.file_type().is_file() {
                 // copy files
                 LocalAsset::copy_named(from, to)?;
+            } else {
+                // other kinds of file presumed to be symlinks which we don't handle
+                debug_assert!(
+                    entry.file_type().is_symlink(),
+                    "unknown type of file at {from}, axoasset needs to be updated to support this!"
+                );
             }
-            // other kinds of file presumed to be symlinks which we don't handle
         }
         Ok(())
     }
