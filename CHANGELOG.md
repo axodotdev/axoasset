@@ -1,5 +1,14 @@
 # Changelog
 
+### v0.5.1 - 2023-09-14
+
+### 🛠️  Fixes
+
+- **Reduce dependency tree size - [mistydemeo], [pr66]**
+
+  Reduces the size of axoasset's dependency tree by not installing unused
+  features from the `images` dependency.
+
 ### v0.5.0 - 2023-08-08
 
 ### 🎁 Features
@@ -12,7 +21,7 @@
   are flattened into the root of the archive.
 
   e.g. to make a tar.gz that matches the npm package format (which
-  wants the tarball to contain a dir named "package"), you can 
+  wants the tarball to contain a dir named "package"), you can
   compress: `"path/to/contents/", Some("package")`
 
 - **Add more copying APIs to LocalAsset - [Gankra], [pr62]**
@@ -56,7 +65,7 @@
   Some breaking cleanups to APIs to make them more ergonomic longterm
 
   - Many APIs that previously took Strings now take `AsRef<Utf8Path>`
-  - write_new_{all} now just takes a path to the file, instead of folder_path + name 
+  - write_new_{all} now just takes a path to the file, instead of folder_path + name
 
 - **update github CI - [striezel], [pr50]**
 
