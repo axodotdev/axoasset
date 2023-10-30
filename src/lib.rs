@@ -27,8 +27,14 @@ use error::Result;
 pub use local::LocalAsset;
 #[cfg(feature = "remote")]
 pub use remote::RemoteAsset;
+#[cfg(feature = "json-serde")]
+pub use serde_json;
 pub use source::SourceFile;
 pub use spanned::Spanned;
+#[cfg(feature = "toml-serde")]
+pub use toml;
+#[cfg(feature = "toml-edit")]
+pub use toml_edit;
 
 /// An asset can either be a local asset, which is designated by a path on the
 /// local file system, or a remote asset, which is designated by an http or
