@@ -1,5 +1,16 @@
 # Changelog
 
+### v0.6.0 - 2023-10-31
+
+### 🎁 Features
+
+- **New reexports - [mistydemeo], [pr68]**
+
+  Reexports `toml`, `toml_edit` and `serde_json`. Types from these three crates
+  appear in certain axoasset function signatures.
+
+[pr68]: https://github.com/axodotdev/axoasset/pull/68
+
 ### v0.5.1 - 2023-09-14
 
 ### 🛠️  Fixes
@@ -225,5 +236,6 @@ Initial release.
 
 [ashleygwilliams]: https://github.com/ashleygwilliams
 [gankra]: https://github.com/gankra
+[mistydemeo]: https://github.com/mistydemeo
 [shadows-withal]: https://github.com/shadows-withal
 [striezel]: https://github.com/striezel
