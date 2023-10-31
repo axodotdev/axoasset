@@ -78,9 +78,9 @@ pub enum AxoassetError {
     /// This error indicates that the mime type of the requested remote asset
     /// was not an image.
     #[error("when fetching asset at {origin_path}, the server's response mime type did not indicate an image.")]
-    #[help(
+    #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured."
-    )]
+    ))]
     RemoteAssetNonImageMimeType {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -165,9 +165,6 @@ pub enum AxoassetError {
     /// This error indicates that axoasset failed to fetch a local asset at the
     /// provided path.
     #[error("failed to fetch asset at {origin_path}: Could not find asset at provided path.")]
-    #[diagnostic(help(
-        "Make sure your path is relative to your oranda config or project manifest file."
-    ))]
     LocalAssetNotFound {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -178,9 +175,6 @@ pub enum AxoassetError {
 
     /// This error inidcates that axoasset failed to copy a local asset.
     #[error("failed to copy asset from {origin_path} to {dest_path}")]
-    #[diagnostic(help(
-        "Make sure your path is relative to your oranda config or project manifest file."
-    ))]
     LocalAssetCopyFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -194,9 +188,6 @@ pub enum AxoassetError {
     /// This error indicates that axoasset failed to read a local asset at the
     /// provided path.
     #[error("failed to read asset from {origin_path}")]
-    #[diagnostic(help(
-        "Make sure your path is relative to your oranda config or project manifest file."
-    ))]
     LocalAssetReadFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -207,9 +198,6 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to write a local asset.
     #[error("failed to write asset from {origin_path} to {dest_path}.")]
-    #[diagnostic(help(
-        "Make sure your path is relative to your oranda config or project manifest file."
-    ))]
     LocalAssetWriteFailed {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -244,9 +232,6 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to delete an asset
     #[error("failed to delete asset at {dest_path}.")]
-    #[diagnostic(help(
-        "Make sure your path is relative to your oranda config or project manifest file."
-    ))]
     LocalAssetRemoveFailed {
         /// The path that was going to be deleted
         dest_path: String,
@@ -258,9 +243,6 @@ pub enum AxoassetError {
     /// This error indicates that axoasset could not determine the filename for
     /// a local asset.
     #[error("could not determine file name for asset at {origin_path}")]
-    #[diagnostic(help(
-        "Make sure your path is relative to your oranda config or project manifest file."
-    ))]
     LocalAssetMissingFilename {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -268,9 +250,6 @@ pub enum AxoassetError {
 
     /// This error indicates we ran into an issue when creating an archive.
     #[error("failed to create archive: {reason}")]
-    #[diagnostic(help(
-        "Make sure your path is relative to your oranda config or project manifest file."
-    ))]
     LocalAssetArchive {
         /// A specific step that failed
         reason: String,
