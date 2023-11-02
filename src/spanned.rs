@@ -199,8 +199,8 @@ impl<T> From<toml::Spanned<T>> for Spanned<T> {
     fn from(value: toml::Spanned<T>) -> Self {
         let span = value.span();
         Self {
-            start: span.0,
-            end: span.1,
+            start: span.start,
+            end: span.end,
             value: value.into_inner(),
         }
     }
