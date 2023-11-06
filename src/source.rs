@@ -102,11 +102,9 @@ impl SourceFile {
 
     /// Try to deserialize the contents of the SourceFile as toml
     #[cfg(feature = "toml-serde")]
-    pub fn deserialize_toml<'a, T: serde::Deserialize<'a>>(&'a self) -> Result<T> {
+    pub fn deserialize_toml<'a, T: for<'de> serde::Deserialize<'de>>(&'a self) -> Result<T> {
         let toml = toml::from_str(self.contents()).map_err(|details| {
-            let span = details
-                .line_col()
-                .and_then(|(line, col)| self.span_for_line_col(line, col));
+            let span = details.span().map(SourceSpan::from);
             AxoassetError::Toml {
                 source: self.clone(),
                 span,
