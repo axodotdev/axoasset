@@ -1,5 +1,10 @@
 # Changelog
 
+### v0.6.1 - 2023-12-19
+
+Minor updates to dependencies to reduce the amount of compression libraries we dynamically link.
+
+
 ### v0.6.0 - 2023-10-31
 
 ### 🎁 Features
