@@ -22,9 +22,10 @@ pub(crate) fn tar_dir(
     compression: &CompressionImpl,
 ) -> crate::error::Result<()> {
     use crate::error::*;
-    use flate2::{write::ZlibEncoder, Compression, GzBuilder};
+    use flate2::{Compression, GzBuilder};
     use std::fs;
     use xz2::write::XzEncoder;
+    use zstd::stream::Encoder as ZstdEncoder;
 
     // Set up the archive/compression
     // dir_name here is a prefix directory/path that the src dir's contents will be stored
@@ -117,7 +118,12 @@ pub(crate) fn tar_dir(
         }
         CompressionImpl::Zstd => {
             // Wrap our file in compression
-            let zip_output = ZlibEncoder::new(final_zip_file, Compression::default());
+            let zip_output = ZstdEncoder::new(final_zip_file, 0).map_err(|details| {
+                AxoassetError::LocalAssetArchive {
+                    reason: format!("failed to create zstd encoder"),
+                    details,
+                }
+            })?;
 
             // Write the tar to the compression stream
             let mut tar = tar::Builder::new(zip_output);

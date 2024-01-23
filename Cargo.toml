@@ -13,7 +13,7 @@ json-serde = ["serde_json", "serde"]
 toml-edit = ["toml_edit"]
 remote = ["reqwest"]
 compression = ["compression-tar", "compression-zip"]
-compression-tar = ["flate2", "tar", "xz2"]
+compression-tar = ["flate2", "tar", "xz2", "zstd"]
 compression-zip = ["zip"]
 
 [dependencies]
@@ -32,6 +32,7 @@ tar = { version = "0.4.38", optional = true }
 zip = { version = "0.6.4", optional = true }
 flate2 = { version = "1.0.25", optional = true }
 xz2 = { version = "0.1.7", optional = true, features = ["static"] }
+zstd = { version = "0.13.0", optional = true }
 toml_edit = { version = "0.21.0", optional = true }
 walkdir = "2.3.3"
 
