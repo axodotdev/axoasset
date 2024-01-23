@@ -1,5 +1,10 @@
 # Changelog
 
+### v0.6.2 - 2024-01-23
+
+Fixes zstd compression to actually use zstd, whoops!
+
+
 ### v0.6.1 - 2023-12-19
 
 Minor updates to dependencies to reduce the amount of compression libraries we dynamically link.
