@@ -22,7 +22,7 @@ mime = "0.3.16"
 reqwest = { version = "0.11.13", optional = true, default-features = false, features = ["json", "rustls-tls"] }
 thiserror = "1.0.37"
 url = "2.3.1"
-miette = "5.6.0"
+miette = "7.0.0"
 camino = "1.1.4"
 
 toml = { version = "0.8.6", optional = true }
