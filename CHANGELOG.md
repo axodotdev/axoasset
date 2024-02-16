@@ -1,5 +1,9 @@
 # Changelog
 
+### v0.7.0 - 2024-02-15
+
+Updates dependencies, including a breaking upgrade to miette. Users of this crate will need to update to at least miette 6.0.0.
+
 ### v0.6.2 - 2024-01-23
 
 Fixes zstd compression to actually use zstd, whoops!
