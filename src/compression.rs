@@ -120,7 +120,7 @@ pub(crate) fn tar_dir(
             // Wrap our file in compression
             let zip_output = ZstdEncoder::new(final_zip_file, 0).map_err(|details| {
                 AxoassetError::LocalAssetArchive {
-                    reason: format!("failed to create zstd encoder"),
+                    reason: "failed to create zstd encoder".to_string(),
                     details,
                 }
             })?;
@@ -160,6 +160,80 @@ pub(crate) fn tar_dir(
     }
 
     Ok(())
+}
+
+#[cfg(feature = "compression-tar")]
+fn open_tarball(
+    tarball: &Utf8Path,
+    compression: &CompressionImpl,
+) -> crate::error::Result<Vec<u8>> {
+    use std::io::Read;
+
+    use flate2::read::GzDecoder;
+    use xz2::read::XzDecoder;
+    use zstd::stream::Decoder as ZstdDecoder;
+
+    use crate::LocalAsset;
+
+    let source = LocalAsset::load_bytes(tarball)?;
+    let mut tarball_bytes = vec![];
+
+    match compression {
+        CompressionImpl::Gzip => {
+            let mut decoder = GzDecoder::new(source.as_slice());
+            decoder.read_to_end(&mut tarball_bytes)?;
+        }
+        CompressionImpl::Xzip => {
+            let mut decoder = XzDecoder::new(source.as_slice());
+            decoder.read_to_end(&mut tarball_bytes)?;
+        }
+        CompressionImpl::Zstd => {
+            let mut decoder = ZstdDecoder::new(source.as_slice())?;
+            decoder.read_to_end(&mut tarball_bytes)?;
+        }
+    };
+
+    Ok(tarball_bytes)
+}
+
+#[cfg(feature = "compression-tar")]
+pub(crate) fn untar_all(
+    tarball: &Utf8Path,
+    dest_path: &Utf8Path,
+    compression: &CompressionImpl,
+) -> crate::error::Result<()> {
+    let tarball_bytes = open_tarball(tarball, compression)?;
+    let mut tarball = tar::Archive::new(tarball_bytes.as_slice());
+    tarball.unpack(dest_path)?;
+
+    Ok(())
+}
+
+#[cfg(feature = "compression-tar")]
+pub(crate) fn untar_file(
+    tarball: &Utf8Path,
+    filename: &str,
+    compression: &CompressionImpl,
+) -> crate::error::Result<Vec<u8>> {
+    use std::io::Read;
+
+    let tarball_bytes = open_tarball(tarball, compression)?;
+    let mut tarball = tar::Archive::new(tarball_bytes.as_slice());
+    for entry in tarball.entries()? {
+        let mut entry = entry?;
+        if let Some(name) = entry.path()?.file_name() {
+            if name == filename {
+                let mut buf = vec![];
+                entry.read_to_end(&mut buf)?;
+
+                return Ok(buf);
+            }
+        }
+    }
+
+    Err(crate::AxoassetError::ExtractFilenameFailed {
+        desired_filename: filename.to_owned(),
+    })
 }
 
 #[cfg(feature = "compression-zip")]
@@ -222,4 +296,40 @@ pub(crate) fn zip_dir(
     }
     zip.finish()?;
     Ok(())
+}
+
+#[cfg(feature = "compression-zip")]
+pub(crate) fn unzip_all(zipfile: &Utf8Path, dest_path: &Utf8Path) -> crate::error::Result<()> {
+    use std::io::Cursor;
+
+    use crate::LocalAsset;
+
+    let source = LocalAsset::load_bytes(zipfile)?;
+    let seekable = Cursor::new(source);
+    let mut archive = zip::ZipArchive::new(seekable)?;
+    archive.extract(&dest_path)?;
+
+    Ok(())
+}
+
+#[cfg(feature = "compression-zip")]
+pub(crate) fn unzip_file(zipfile: &Utf8Path, filename: &str) -> crate::error::Result<Vec<u8>> {
+    use std::io::{Cursor, Read};
+
+    use crate::LocalAsset;
+
+    let source = LocalAsset::load_bytes(zipfile)?;
+    let seekable = Cursor::new(source);
+    let mut archive = zip::ZipArchive::new(seekable)?;
+    let mut file =
+        archive
+            .by_name(&filename)
+            .map_err(|_| crate::AxoassetError::ExtractFilenameFailed {
+                desired_filename: filename.to_owned(),
+            })?;
+
+    let mut buf = vec![];
+    file.read_to_end(&mut buf)?;
+
+    Ok(buf)
 }
