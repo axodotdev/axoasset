@@ -1,5 +1,15 @@
 # Changelog
 
+### v0.8.0 - 2024-03-06
+
+### 🎁 Features
+
+- **Extract archives - [mistydemeo], [pr84]**
+
+Adds the ability to decompress tarballs and ZIP files from `LocalAsset`. Users can extract an entire archive to a directory via the `untar_gz_all`/`untar_xz_all`/`untar_zstd_all`/`unzip_all` methods, or extract individual files to bytearrays of their contents via the `untar_gz_file`/`untar_xz_file`/`untar_zstd_file`/`unzip_file` metods.
+
+[pr84]: https://github.com/axodotdev/axoasset/pull/84
+
 ### v0.7.0 - 2024-02-15
 
 Updates dependencies, including a breaking upgrade to miette. Users of this crate will need to update to at least miette 6.0.0.
