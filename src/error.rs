@@ -32,6 +32,17 @@ pub enum AxoassetError {
     #[error(transparent)]
     MimeParseParse(#[from] mime::FromStrError),
 
+    /// This error is a transparent error forwarded from the flate2 library.
+    /// This error indicates that an error of some kind occurred while performing io.
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    /// This error is a transparent error forwarded from the flate2 library.
+    /// This error indicates that an error of some kind occurred while opening a ZIP file.
+    #[error(transparent)]
+    #[cfg(feature = "compression-zip")]
+    Zip(#[from] zip::result::ZipError),
+
     /// This error indicates that axoasset was asked to create a new remote
     /// asset, likely by being given an path that starts with http or https.
     /// Axoasset can only create new assets on the file system.
@@ -287,6 +298,13 @@ pub enum AxoassetError {
     SearchFailed {
         /// The dir we started the search in
         start_dir: camino::Utf8PathBuf,
+        /// The filename we were searching for
+        desired_filename: String,
+    },
+
+    #[error("Failed to find {desired_filename} within archive being decompressed")]
+    /// This error indicates we failed to find the desired file within a tarball or zip
+    ExtractFilenameFailed {
         /// The filename we were searching for
         desired_filename: String,
     },

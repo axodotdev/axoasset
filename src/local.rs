@@ -381,6 +381,26 @@ impl LocalAsset {
         )
     }
 
+    /// Extracts the entire tarball at `tarball` to a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
+    pub fn untar_gz_all(tarball: &Utf8Path, dest_path: &Utf8Path) -> Result<()> {
+        crate::compression::untar_all(
+            tarball,
+            dest_path,
+            &crate::compression::CompressionImpl::Gzip,
+        )
+    }
+
+    /// Extracts the file named `filename` within the tarball at `tarball` and returns its contents as bytes
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
+    pub fn untar_gz_file(tarball: &Utf8Path, filename: &str) -> Result<Vec<u8>> {
+        crate::compression::untar_file(
+            tarball,
+            filename,
+            &crate::compression::CompressionImpl::Gzip,
+        )
+    }
+
     /// Creates a new .tar.xz file from a provided directory
     ///
     /// The with_root argument specifies that all contents of dest_dir should be placed
@@ -401,6 +421,29 @@ impl LocalAsset {
         )
     }
 
+    /// Extracts the entire tarball at `tarball` to a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
+    pub fn untar_xz_all(
+        tarball: impl AsRef<Utf8Path>,
+        dest_path: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
+        crate::compression::untar_all(
+            Utf8Path::new(tarball.as_ref()),
+            Utf8Path::new(dest_path.as_ref()),
+            &crate::compression::CompressionImpl::Xzip,
+        )
+    }
+
+    /// Extracts the file named `filename` within the tarball at `tarball` and returns its contents as bytes
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
+    pub fn untar_xz_file(tarball: impl AsRef<Utf8Path>, filename: &str) -> Result<Vec<u8>> {
+        crate::compression::untar_file(
+            Utf8Path::new(tarball.as_ref()),
+            filename,
+            &crate::compression::CompressionImpl::Xzip,
+        )
+    }
+
     /// Creates a new .tar.zstd file from a provided directory
     ///
     /// The with_root argument specifies that all contents of dest_dir should be placed
@@ -417,6 +460,29 @@ impl LocalAsset {
             Utf8Path::new(origin_dir.as_ref()),
             Utf8Path::new(dest_dir.as_ref()),
             with_root.as_ref().map(|p| p.as_ref()),
+            &crate::compression::CompressionImpl::Zstd,
+        )
+    }
+
+    /// Extracts the entire tarball at `tarball` to a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
+    pub fn untar_zstd_all(
+        tarball: impl AsRef<Utf8Path>,
+        dest_path: impl AsRef<Utf8Path>,
+    ) -> Result<()> {
+        crate::compression::untar_all(
+            Utf8Path::new(tarball.as_ref()),
+            Utf8Path::new(dest_path.as_ref()),
+            &crate::compression::CompressionImpl::Zstd,
+        )
+    }
+
+    /// Extracts the file named `filename` within the tarball at `tarball` and returns its contents as bytes
+    #[cfg(any(feature = "compression", feature = "compression-tar"))]
+    pub fn untar_zstd_file(tarball: impl AsRef<Utf8Path>, filename: &str) -> Result<Vec<u8>> {
+        crate::compression::untar_file(
+            Utf8Path::new(tarball.as_ref()),
+            filename,
             &crate::compression::CompressionImpl::Zstd,
         )
     }
@@ -442,5 +508,20 @@ impl LocalAsset {
             reason: format!("failed to write tar: {}", dest_dir.as_ref()),
             details: e.into(),
         })
+    }
+
+    /// Extracts a .zip file to the a provided directory
+    #[cfg(any(feature = "compression", feature = "compression-zip"))]
+    pub fn unzip_all(zipfile: impl AsRef<Utf8Path>, dest_dir: impl AsRef<Utf8Path>) -> Result<()> {
+        crate::compression::unzip_all(
+            Utf8Path::new(zipfile.as_ref()),
+            Utf8Path::new(dest_dir.as_ref()),
+        )
+    }
+
+    /// Extracts the file named `filename` within the ZIP file at `zipfile` and returns its contents as bytes
+    #[cfg(any(feature = "compression", feature = "compression-zip"))]
+    pub fn unzip_file(zipfile: impl AsRef<Utf8Path>, filename: &str) -> Result<Vec<u8>> {
+        crate::compression::unzip_file(Utf8Path::new(zipfile.as_ref()), filename)
     }
 }
