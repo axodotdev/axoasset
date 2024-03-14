@@ -89,7 +89,18 @@ impl SourceFile {
     /// Try to deserialize the contents of the SourceFile as json
     #[cfg(feature = "json-serde")]
     pub fn deserialize_json<'a, T: serde::Deserialize<'a>>(&'a self) -> Result<T> {
-        let json = serde_json::from_str(self.contents()).map_err(|details| {
+        // Although many JSON parsers support JSON that begins with a BOM,
+        // json-serde doesn't:
+        // https://github.com/serde-rs/json/issues/1115
+        // In UTF-8, \uFEFF (0xEF 0xBB 0xBF) is always the BOM; it's not
+        // variable like in UTF-16. Since the string is already UTF-8 here,
+        // stripping the BOM is pretty simple.
+        let mut contents = self.contents();
+        if let Some(stripped) = contents.strip_prefix('\u{FEFF}') {
+            contents = stripped;
+        }
+
+        let json = serde_json::from_str(contents).map_err(|details| {
             let span = self.span_for_line_col(details.line(), details.column());
             AxoassetError::Json {
                 source: self.clone(),
