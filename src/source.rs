@@ -7,6 +7,7 @@ use miette::{MietteSpanContents, SourceCode, SourceSpan};
 use crate::{error::*, LocalAsset};
 
 #[cfg(feature = "toml-edit")]
+#[allow(deprecated)]
 use crate::toml_edit::Document;
 
 #[cfg(feature = "json-serde")]
@@ -127,7 +128,9 @@ impl SourceFile {
 
     /// Try to deserialize the contents of the SourceFile as a toml_edit Document
     #[cfg(feature = "toml-edit")]
+    #[allow(deprecated)]
     pub fn deserialize_toml_edit(&self) -> Result<Document> {
+        #[allow(deprecated)]
         let toml = self.contents().parse::<Document>().map_err(|details| {
             let span = details.span().map(SourceSpan::from);
             AxoassetError::TomlEdit {
