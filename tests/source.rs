@@ -56,6 +56,31 @@ fn json_valid() {
 
 #[cfg(feature = "json-serde")]
 #[test]
+fn json_with_bom() {
+    #[derive(serde::Deserialize, PartialEq, Eq, Debug)]
+    struct MyType {
+        hello: String,
+        goodbye: bool,
+    }
+
+    // Make the file
+    let contents =
+        String::from("\u{FEFF}") + &String::from(r##"{ "hello": "there", "goodbye": true }"##);
+    let source = axoasset::SourceFile::new("file.js", contents);
+
+    // Get the span for a non-substring (string literal isn't pointing into the String)
+    let val = source.deserialize_json::<MyType>().unwrap();
+    assert_eq!(
+        val,
+        MyType {
+            hello: "there".to_string(),
+            goodbye: true
+        }
+    );
+}
+
+#[cfg(feature = "json-serde")]
+#[test]
 fn json_invalid() {
     use axoasset::AxoassetError;
 
@@ -121,7 +146,7 @@ fn toml_invalid() {
     let contents = String::from(
         r##"
 hello = "there"
-goodbye = 
+goodbye =
 "##,
     );
     let source = axoasset::SourceFile::new("file.toml", contents);
@@ -161,7 +186,7 @@ fn toml_edit_invalid() {
     let contents = String::from(
         r##"
 hello = "there"
-goodbye = 
+goodbye =
 "##,
     );
     let source = axoasset::SourceFile::new("file.toml", contents);

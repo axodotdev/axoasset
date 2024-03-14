@@ -7,6 +7,7 @@ use miette::{MietteSpanContents, SourceCode, SourceSpan};
 use crate::{error::*, LocalAsset};
 
 #[cfg(feature = "toml-edit")]
+#[allow(deprecated)]
 use crate::toml_edit::Document;
 
 #[cfg(feature = "json-serde")]
@@ -89,7 +90,18 @@ impl SourceFile {
     /// Try to deserialize the contents of the SourceFile as json
     #[cfg(feature = "json-serde")]
     pub fn deserialize_json<'a, T: serde::Deserialize<'a>>(&'a self) -> Result<T> {
-        let json = serde_json::from_str(self.contents()).map_err(|details| {
+        // Although many JSON parsers support JSON that begins with a BOM,
+        // json-serde doesn't:
+        // https://github.com/serde-rs/json/issues/1115
+        // In UTF-8, \uFEFF (0xEF 0xBB 0xBF) is always the BOM; it's not
+        // variable like in UTF-16. Since the string is already UTF-8 here,
+        // stripping the BOM is pretty simple.
+        let mut contents = self.contents();
+        if let Some(stripped) = contents.strip_prefix('\u{FEFF}') {
+            contents = stripped;
+        }
+
+        let json = serde_json::from_str(contents).map_err(|details| {
             let span = self.span_for_line_col(details.line(), details.column());
             AxoassetError::Json {
                 source: self.clone(),
@@ -116,7 +128,9 @@ impl SourceFile {
 
     /// Try to deserialize the contents of the SourceFile as a toml_edit Document
     #[cfg(feature = "toml-edit")]
+    #[allow(deprecated)]
     pub fn deserialize_toml_edit(&self) -> Result<Document> {
+        #[allow(deprecated)]
         let toml = self.contents().parse::<Document>().map_err(|details| {
             let span = details.span().map(SourceSpan::from);
             AxoassetError::TomlEdit {
