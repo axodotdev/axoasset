@@ -1,5 +1,18 @@
 # Changelog
 
+### v0.9.0 - 2024-03-14
+
+### 🎁 Features
+
+- **Parsing JSON containing byte order marks - [mistydemeo], [pr87]**
+
+This fixes an issue parsing JSON from files containing a [byte order mark]. This is rare, but can occur with JSON files created in Windows with certain software, including data written to disk in PowerShell.
+
+The underlying JSON parsing library used by axoasset doesn't currently support parsing JSON files that begin with a byte order mark. In this release, we strip it from files that contain it before passing it to serde in order to work around this limitation.
+
+[byte order mark]: https://en.wikipedia.org/wiki/Byte_order_mark
+[pr87]: https://github.com/axodotdev/axoasset/pull/87
+
 ### v0.8.0 - 2024-03-06
 
 ### 🎁 Features
