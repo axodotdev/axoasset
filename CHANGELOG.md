@@ -1,5 +1,15 @@
 # Changelog
 
+### v0.9.1 - 2024-03-26
+
+### 🛠️ Fixes
+
+- **Zipping directory trees on Windows - [mistydemeo], [pr94]**
+
+Recursive directory trees on Windows would be zipped with mangled filenames; this has been fixed by preprocessing the file names before passing them to the `zip` crate.
+
+[pr94]: https://github.com/axodotdev/axoasset/pull/94
+
 ### v0.9.0 - 2024-03-14
 
 ### 🎁 Features
@@ -31,11 +41,9 @@ Updates dependencies, including a breaking upgrade to miette. Users of this crat
 
 Fixes zstd compression to actually use zstd, whoops!
 
-
 ### v0.6.1 - 2023-12-19
 
 Minor updates to dependencies to reduce the amount of compression libraries we dynamically link.
-
 
 ### v0.6.0 - 2023-10-31
 
@@ -50,7 +58,7 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
 
 ### v0.5.1 - 2023-09-14
 
-### 🛠️  Fixes
+### 🛠️ Fixes
 
 - **Reduce dependency tree size - [mistydemeo], [pr66]**
 
@@ -86,7 +94,7 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
 
 - **Don't use OpenSSL - [Gankra], [pr56]**
 
-### 🛠️  Fixes
+### 🛠️ Fixes
 
 - **Don't reject spans that cover the last char - [Gankra], [pr55]**
 
@@ -113,7 +121,7 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
   Some breaking cleanups to APIs to make them more ergonomic longterm
 
   - Many APIs that previously took Strings now take `AsRef<Utf8Path>`
-  - write_new_{all} now just takes a path to the file, instead of folder_path + name
+  - write*new*{all} now just takes a path to the file, instead of folder_path + name
 
 - **update github CI - [striezel], [pr50]**
 
@@ -166,10 +174,9 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
 [pr38]: https://github.com/axodotdev/axoasset/pull/38
 [pr46]: https://github.com/axodotdev/axoasset/pull/46
 
-
 ## v0.1.1 - 2023-04-06
 
-### 🛠️  Fixes
+### 🛠️ Fixes
 
 - **Fix compilation errors for features and add tests - [Gankra]/[ashleygwilliams], [pr33]**
 
@@ -179,7 +186,7 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
 
 ### 🎁 Features
 
-- **✨ New type: `SourceFile` - [Gankra],  [pr25]**
+- **✨ New type: `SourceFile` - [Gankra], [pr25]**
 
   `SourceFile` is a new asset type which is a readonly String version of
   `Asset` wrapped in an `Arc`. The purpose of this type is to be cheap to
@@ -188,7 +195,7 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
   is cheap at minimal overhead. The String ensures the contents make sense to
   display.
 
-- **✨ New type: `Spanned` - [Gankra],  [pr25]**
+- **✨ New type: `Spanned` - [Gankra], [pr25]**
 
   `Spanned<T>` is a new type which tries to behave like `Box<T>` in the sense
   that it's "as if" it's a `T` but with source span info embedded. If you want
@@ -198,7 +205,7 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
   `Spanned::span(&value)` to extract the span and have miette include the
   asset context in the error message.
 
-- **✨ New features: `serde_json` and `toml-rs` - [Gankra],  [pr25]**
+- **✨ New features: `serde_json` and `toml-rs` - [Gankra], [pr25]**
 
   `json-serde` and `toml-serde` are new features which pull in dedicated
   support for `serde_json` and `toml-rs`. These features add `deserialize_json`
@@ -246,25 +253,23 @@ Minor updates to dependencies to reduce the amount of compression libraries we d
   added benefit of formalizing structures we were informally building into our
   error types (help/diagnostic text, forwarding the bare error as details, etc).
 
-
 - **consistent `Asset` interface - [ashleygwilliams], [pr30]**
 
   With 3 asset types, `LocalAsset`, `RemoteAsset`, and `SourceFile`, it felt
   important to align their structures so they could be used nearly identically.
   Every type now has a:
 
-     - `origin_path`: the original source of the file
-     - `filename`: derived from the `origin_path` and, in the case of `RemoteAsset`s
-        also the headers from the network response.
-     - `contents`: the contents of the asset as bytes or a String depending on
-        asset type
+  - `origin_path`: the original source of the file
+  - `filename`: derived from the `origin_path` and, in the case of `RemoteAsset`s
+    also the headers from the network response.
+  - `contents`: the contents of the asset as bytes or a String depending on
+    asset type
 
 [pr24]: https://github.com/axodotdev/axoasset/pull/24
 [pr25]: https://github.com/axodotdev/axoasset/pull/25
 [pr26]: https://github.com/axodotdev/axoasset/pull/26
 [pr28]: https://github.com/axodotdev/axoasset/pull/28
 [pr30]: https://github.com/axodotdev/axoasset/pull/30
-
 [own magic `Spanned` type]: https://docs.rs/toml/latest/toml/struct.Spanned.html
 
 ## v0.0.1 - 2023-02-14
