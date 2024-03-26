@@ -1,6 +1,8 @@
 //! Compression-related methods, all used in `axoasset::Local`
 
 use camino::Utf8Path;
+#[cfg(feature = "compression-zip")]
+use camino::Utf8PathBuf;
 
 /// Internal tar-file compression algorithms
 #[cfg(feature = "compression-tar")]
@@ -279,10 +281,19 @@ pub(crate) fn zip_dir(
             name.to_owned()
         };
 
+        // ZIP files always need Unix-style file separators; we need to
+        // convert any Windows file names to use Unix separators before
+        // passing them to any of the other functions.
+        let unix_name = Utf8PathBuf::from(&name)
+            .components()
+            .map(|c| c.as_str())
+            .collect::<Vec<&str>>()
+            .join("/");
+
         // Write file or directory explicitly
         // Some unzip tools unzip files with directory paths correctly, some do not!
         if path.is_file() {
-            zip.start_file(name, options)?;
+            zip.start_file(&unix_name, options)?;
             let mut f = File::open(path)?;
 
             f.read_to_end(&mut buffer)?;
@@ -291,7 +302,7 @@ pub(crate) fn zip_dir(
         } else if !name.as_str().is_empty() {
             // Only if not root! Avoids path spec / warning
             // and mapname conversion failed error on unzip
-            zip.add_directory(name, options)?;
+            zip.add_directory(&unix_name, options)?;
         }
     }
     zip.finish()?;
