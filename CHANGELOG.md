@@ -1,5 +1,15 @@
 # Changelog
 
+### v0.9.1 - 2024-03-26
+
+### 🛠️ Fixes
+
+- **Zipping directory trees on Windows - [mistydemeo], [pr94]**
+
+Recursive directory trees on Windows would be zipped with mangled filenames; this has been fixed by preprocessing the file names before passing them to the `zip` crate.
+
+[pr94]: https://github.com/axodotdev/axoasset/pull/94
+
 ### v0.9.0 - 2024-03-14
 
 ### 🎁 Features
