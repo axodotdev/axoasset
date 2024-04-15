@@ -17,7 +17,7 @@ compression-tar = ["flate2", "tar", "xz2", "zstd"]
 compression-zip = ["zip"]
 
 [dependencies]
-image = { version = "0.24.5", default-features = false }
+image = { version = "0.25.1", default-features = false }
 mime = "0.3.16"
 reqwest = { version = "0.11.13", optional = true, default-features = false, features = ["json", "rustls-tls"] }
 thiserror = "1.0.37"
