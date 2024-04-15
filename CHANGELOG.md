@@ -1,5 +1,11 @@
 # Changelog
 
+### v0.9.2 - 2024-04-15
+
+### 🛠️ Fixes
+
+Fixes a branching error in the previous release which prevented the ZIP fix from being usable.
+
 ### v0.9.1 - 2024-03-26
 
 ### 🛠️ Fixes
