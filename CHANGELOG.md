@@ -1,5 +1,11 @@
 # Changelog
 
+### v0.9.3 - 2024-04-16
+
+### 🛠️ Fixes
+
+Reduces the dependency tree when the `remote` feature isn't in use by properly scoping the `image` dependency.
+
 ### v0.9.2 - 2024-04-15
 
 ### 🛠️ Fixes
