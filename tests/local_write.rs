@@ -1,3 +1,4 @@
+#![cfg(feature = "image")]
 #![allow(irrefutable_let_patterns)]
 
 use std::collections::HashMap;
