@@ -27,7 +27,7 @@ camino = "1.1.4"
 
 toml = { version = "0.8.6", optional = true }
 serde_json = { version = "1.0.95", optional = true }
-serde = { version = "1.0.159", optional = true, features = ["derive"] }
+serde = { version = "1.0.201", optional = true, features = ["derive"] }
 tar = { version = "0.4.38", optional = true }
 zip = { version = "0.6.4", optional = true }
 flate2 = { version = "1.0.25", optional = true }
