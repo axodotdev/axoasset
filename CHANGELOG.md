@@ -1,5 +1,11 @@
 # Changelog
 
+### v0.9.5 - 2024-05-22
+
+### Maintenace
+
+Relaxes the `reqwest` dependency range.
+
 ### v0.9.4 - 2024-05-22
 
 ### Maintenace
