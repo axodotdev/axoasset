@@ -1,5 +1,11 @@
 # Changelog
 
+### v0.9.4 - 2024-05-22
+
+### Maintenace
+
+Updates several dependencies.
+
 ### v0.9.3 - 2024-04-16
 
 ### 🛠️ Fixes
