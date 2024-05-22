@@ -24,11 +24,10 @@ thiserror = "1.0.37"
 url = "2.5.0"
 miette = "7.0.0"
 camino = "1.1.4"
-
 toml = { version = "0.8.6", optional = true }
 serde_json = { version = "1.0.117", optional = true }
 serde = { version = "1.0.202", optional = true, features = ["derive"] }
-tar = { version = "0.4.38", optional = true }
+tar = { version = "0.4.40", optional = true }
 zip = { version = "0.6.4", optional = true }
 flate2 = { version = "1.0.30", optional = true }
 xz2 = { version = "0.1.7", optional = true, features = ["static"] }
