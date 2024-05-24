@@ -505,7 +505,7 @@ impl LocalAsset {
             with_root.as_ref().map(|p| p.as_ref()),
         )
         .map_err(|e| AxoassetError::LocalAssetArchive {
-            reason: format!("failed to write tar: {}", dest_dir.as_ref()),
+            reason: format!("failed to write zip: {}", dest_dir.as_ref()),
             details: e.into(),
         })
     }
