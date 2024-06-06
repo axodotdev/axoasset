@@ -1,5 +1,27 @@
 # Changelog
 
+### v0.10.0 - 2024-06-06
+
+### 🛠️ Fixes
+
+- **RemoteAsset: fix mimetype requirement - [mistydemeo], [pr126]**
+
+Fixes an issue where functions like `RemoteAsset::copy` would fail on files without specific mimetypes. We used this to assign file extensions based on mimetype, but it shouldn't have rejected other files.
+
+[pr126]: https://github.com/axodotdev/axoasset/pull/126
+
+- **RemoteAsset: exposes reqwest - [mistydemeo], [pr137]**
+
+[pr137]: https://github.com/axodotdev/axoasset/pull/137
+
+- **LocalAsset: fixes a misleading error message - sorairolake, [pr126]**
+
+[pr133]: https://github.com/axodotdev/axoasset/pull/133
+
+### Maintenace
+
+Updates several dependencies.
+
 ### v0.9.5 - 2024-05-22
 
 ### Maintenace
