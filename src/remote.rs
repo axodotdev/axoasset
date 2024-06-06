@@ -113,14 +113,11 @@ impl RemoteAsset {
         }
     }
 
-    fn extension(mimetype: mime::Mime, origin_path: &str) -> Result<String> {
+    fn extension(mimetype: mime::Mime, origin_path: &str) -> Option<String> {
         match mimetype.type_() {
-            mime::IMAGE => RemoteAsset::image_extension(mimetype, origin_path),
-            mime::TEXT => RemoteAsset::text_extension(mimetype, origin_path),
-            _ => Err(AxoassetError::RemoteAssetMimeTypeNotSupported {
-                origin_path: origin_path.to_string(),
-                mimetype: mimetype.to_string(),
-            }),
+            mime::IMAGE => RemoteAsset::image_extension(mimetype, origin_path).ok(),
+            mime::TEXT => RemoteAsset::text_extension(mimetype, origin_path).ok(),
+            _ => None,
         }
     }
 
@@ -179,10 +176,14 @@ impl RemoteAsset {
         filestem.remove(0);
         if filestem.contains('.') {
             Ok(filestem)
+        } else if let Ok(mimetype) = RemoteAsset::mimetype(headers, origin_path) {
+            if let Some(extension) = RemoteAsset::extension(mimetype, origin_path) {
+                Ok(format!("{filestem}.{extension}"))
+            } else {
+                Ok(filestem)
+            }
         } else {
-            let extension =
-                RemoteAsset::extension(RemoteAsset::mimetype(headers, origin_path)?, origin_path)?;
-            Ok(format!("{filestem}.{extension}"))
+            Ok(filestem)
         }
     }
 }
