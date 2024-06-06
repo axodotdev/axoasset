@@ -3,6 +3,9 @@ use std::path::{Path, PathBuf};
 
 use camino::{Utf8Path, Utf8PathBuf};
 
+// Simplifies raw access to reqwest without depending on a separate copy
+pub use reqwest;
+
 use crate::error::*;
 
 /// A remote asset is an asset that is fetched over the network.
