@@ -176,10 +176,12 @@ impl RemoteAsset {
         filestem.remove(0);
         if filestem.contains('.') {
             Ok(filestem)
-        } else if let Some(extension) =
-            RemoteAsset::extension(RemoteAsset::mimetype(headers, origin_path)?, origin_path)
-        {
-            Ok(format!("{filestem}.{extension}"))
+        } else if let Ok(mimetype) = RemoteAsset::mimetype(headers, origin_path) {
+            if let Some(extension) = RemoteAsset::extension(mimetype, origin_path) {
+                Ok(format!("{filestem}.{extension}"))
+            } else {
+                Ok(filestem)
+            }
         } else {
             Ok(filestem)
         }
