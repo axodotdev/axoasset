@@ -1,5 +1,11 @@
 # Changelog
 
+### v0.10.1 - 2024-06-10
+
+Fixes the `pub use reqwest` that was added in the previous version.
+
+### 🛠️ Fixes
+
 ### v0.10.0 - 2024-06-06
 
 ### 🛠️ Fixes
