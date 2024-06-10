@@ -27,6 +27,9 @@ use error::Result;
 pub use local::LocalAsset;
 #[cfg(feature = "remote")]
 pub use remote::RemoteAsset;
+// Simplifies raw access to reqwest without depending on a separate copy
+#[cfg(feature = "remote")]
+pub use reqwest;
 #[cfg(feature = "json-serde")]
 pub use serde_json;
 pub use source::SourceFile;
