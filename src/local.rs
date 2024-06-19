@@ -1,7 +1,6 @@
 //! Local file operations
 
 use std::fs;
-use std::path::{Path, PathBuf};
 
 use camino::{Utf8Path, Utf8PathBuf};
 
@@ -37,7 +36,7 @@ impl LocalAsset {
     /// LocalAsset struct
     pub fn load(origin_path: impl AsRef<Utf8Path>) -> Result<LocalAsset> {
         let origin_path = origin_path.as_ref();
-        match Path::new(origin_path).try_exists() {
+        match origin_path.try_exists() {
             Ok(_) => match fs::read(origin_path) {
                 Ok(contents) => Ok(LocalAsset {
                     filename: LocalAsset::filename(origin_path)?,
@@ -60,7 +59,7 @@ impl LocalAsset {
     /// string of its contents
     pub fn load_string(origin_path: impl AsRef<Utf8Path>) -> Result<String> {
         let origin_path = origin_path.as_ref();
-        match Path::new(origin_path).try_exists() {
+        match origin_path.try_exists() {
             Ok(_) => match fs::read_to_string(origin_path) {
                 Ok(contents) => Ok(contents),
                 Err(details) => Err(AxoassetError::LocalAssetReadFailed {
@@ -79,7 +78,7 @@ impl LocalAsset {
     /// vector of bytes of its contents
     pub fn load_bytes(origin_path: impl AsRef<Utf8Path>) -> Result<Vec<u8>> {
         let origin_path = origin_path.as_ref();
-        match Path::new(origin_path).try_exists() {
+        match origin_path.try_exists() {
             Ok(_) => match fs::read(origin_path) {
                 Ok(contents) => Ok(contents),
                 Err(details) => Err(AxoassetError::LocalAssetReadFailed {
@@ -96,11 +95,11 @@ impl LocalAsset {
 
     /// Writes an asset to a path on the local filesystem, determines the
     /// filename from the origin path
-    pub fn write(&self, dest_dir: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+    pub fn write(&self, dest_dir: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let dest_dir = dest_dir.as_ref();
         let dest_path = dest_dir.join(&self.filename);
         match fs::write(&dest_path, &self.contents) {
-            Ok(_) => Ok(dest_path.into()),
+            Ok(_) => Ok(dest_path),
             Err(details) => Err(AxoassetError::LocalAssetWriteFailed {
                 origin_path: self.origin_path.to_string(),
                 dest_path: dest_path.to_string(),
@@ -110,9 +109,9 @@ impl LocalAsset {
     }
 
     /// Writes an asset to a path on the local filesystem
-    pub fn write_new(contents: &str, dest_path: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+    pub fn write_new(contents: &str, dest_path: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let dest_path = dest_path.as_ref();
-        if Path::new(dest_path).file_name().is_none() {
+        if dest_path.file_name().is_none() {
             return Err(AxoassetError::LocalAssetMissingFilename {
                 origin_path: dest_path.to_string(),
             });
@@ -127,14 +126,14 @@ impl LocalAsset {
     }
 
     /// Writes an asset and all of its parent directories on the local filesystem.
-    pub fn write_new_all(contents: &str, dest_path: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+    pub fn write_new_all(contents: &str, dest_path: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let dest_path = dest_path.as_ref();
-        if Path::new(dest_path).file_name().is_none() {
+        if dest_path.file_name().is_none() {
             return Err(AxoassetError::LocalAssetMissingFilename {
                 origin_path: dest_path.to_string(),
             });
         }
-        let dest_dir = Path::new(dest_path).parent().unwrap();
+        let dest_dir = dest_path.parent().unwrap();
         match fs::create_dir_all(dest_dir) {
             Ok(_) => (),
             Err(details) => {
@@ -148,7 +147,7 @@ impl LocalAsset {
     }
 
     /// Creates a new directory
-    pub fn create_dir(dest: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+    pub fn create_dir(dest: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let dest_path = dest.as_ref();
         match fs::create_dir(dest_path) {
             Ok(_) => Ok(dest_path.into()),
@@ -160,7 +159,7 @@ impl LocalAsset {
     }
 
     /// Creates a new directory, including all parent directories
-    pub fn create_dir_all(dest: impl AsRef<Utf8Path>) -> Result<PathBuf> {
+    pub fn create_dir_all(dest: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let dest_path = dest.as_ref();
         match fs::create_dir_all(dest_path) {
             Ok(_) => Ok(dest_path.into()),
