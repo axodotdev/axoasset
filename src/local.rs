@@ -506,10 +506,6 @@ impl LocalAsset {
             Utf8Path::new(dest_dir.as_ref()),
             with_root.as_ref().map(|p| p.as_ref()),
         )
-        .map_err(|e| AxoassetError::LocalAssetArchive {
-            reason: format!("failed to write zip: {}", dest_dir.as_ref()),
-            details: e.into(),
-        })
     }
 
     /// Extracts a .zip file to the a provided directory

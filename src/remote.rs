@@ -149,7 +149,17 @@ impl RemoteAsset {
     fn mimetype(headers: &reqwest::header::HeaderMap, origin_url: &UrlStr) -> Result<mime::Mime> {
         match headers.get(reqwest::header::CONTENT_TYPE) {
             Some(content_type) => {
-                let mtype: mime::Mime = content_type.to_str()?.parse()?;
+                let mtype: mime::Mime = content_type
+                    .to_str()
+                    .map_err(|details| AxoassetError::HeaderParse {
+                        origin_path: origin_url.to_string(),
+                        details,
+                    })?
+                    .parse()
+                    .map_err(|details| AxoassetError::MimeParse {
+                        origin_path: origin_url.to_string(),
+                        details,
+                    })?;
                 match mtype.type_() {
                     mime::IMAGE => Ok(mtype),
                     mime::TEXT => Ok(mtype),
@@ -220,7 +230,11 @@ impl RemoteAsset {
     // avoid name conflicts, but this is a half measure at best and leaves a
     // lot of room for improvement.
     fn filename(origin_url: &UrlStr, headers: &reqwest::header::HeaderMap) -> Result<String> {
-        let mut filestem = url::Url::parse(origin_url)?
+        let mut filestem = url::Url::parse(origin_url)
+            .map_err(|details| AxoassetError::UrlParse {
+                origin_path: origin_url.to_owned(),
+                details,
+            })?
             .path()
             .to_string()
             .replace('/', "_");
