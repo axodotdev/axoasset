@@ -357,6 +357,7 @@ pub(crate) fn unzip_all(zipfile: &Utf8Path, dest_path: &Utf8Path) -> crate::erro
     })
 }
 
+#[cfg(feature = "compression-zip")]
 fn unzip_all_impl(source: &[u8], dest_path: &Utf8Path) -> zip::result::ZipResult<()> {
     use std::io::Cursor;
 

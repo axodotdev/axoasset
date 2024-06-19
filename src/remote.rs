@@ -123,7 +123,7 @@ pub struct RemoteAsset {
 impl RemoteAsset {
     /// Writes an RemoteAsset's bytes to the given local directory
     ///
-    /// The filename used will be [`RemoteAsset::filename`][], and the resulting file
+    /// The filename used will be `RemoteAsset::filename`, and the resulting file
     /// path will be returned.
     pub async fn write_to_dir(&self, dest_dir: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let dest_path = dest_dir.as_ref().join(&self.filename);
@@ -134,7 +134,7 @@ impl RemoteAsset {
     /// Writes the RemoteAsset's bytes to the given local filepath
     ///
     /// Note that unlike [`RemoteAsset::write_to_dir`][] this will ignore
-    /// the computed [`RemoteAsset::filename`][], preferring the one given here.
+    /// the computed `RemoteAsset::filename`, preferring the one given here.
     pub async fn write_to_file(&self, dest_file: impl AsRef<Utf8Path>) -> Result<()> {
         let dest_path = dest_file.as_ref();
         fs::write(dest_path, &self.contents).map_err(|details| {

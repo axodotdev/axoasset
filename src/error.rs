@@ -1,6 +1,5 @@
 //! Axoasset Errors
 
-use crate::remote;
 use miette::Diagnostic;
 use thiserror::Error;
 
@@ -66,6 +65,7 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured."
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetNonImageMimeType {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -77,6 +77,7 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured"
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetMimeTypeNotSupported {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -91,6 +92,7 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured"
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetIndeterminateImageFormatExtension {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -103,6 +105,7 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured"
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetMissingContentTypeHeader {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -112,9 +115,10 @@ pub enum AxoassetError {
     /// local filesystem.
     #[error("failed to write asset at {origin_url} to {dest_path}: Could not find asset at provided path.")]
     #[diagnostic(help("Make sure your path is correct and your server is configured correctly."))]
+    #[cfg(feature = "remote")]
     RemoteAssetWriteFailed {
         /// The origin path of the asset, used as an identifier
-        origin_url: remote::UrlString,
+        origin_url: crate::remote::UrlString,
         /// The path where the asset was being written to
         dest_path: camino::Utf8PathBuf,
         /// Details of the error
