@@ -10,13 +10,6 @@ pub type Result<T> = std::result::Result<T, AxoassetError>;
 /// The set of errors that can occur when axoasset is used
 #[derive(Debug, Error, Diagnostic)]
 pub enum AxoassetError {
-    /// This error is a transparent error forwarded from the reqwe.
-    /// Long-term the goal is to eliminate this error variant in favor of more
-    /// specific error variants.
-    #[error(transparent)]
-    #[cfg(feature = "remote")]
-    Reqwest(#[from] reqwest::Error),
-
     /// This error is a transparent error forwarded from the URL library. This
     /// error indicates that the provided URL did not properly parse and may
     /// either be invalid or an unsupported format.
@@ -47,16 +40,6 @@ pub enum AxoassetError {
     #[cfg(feature = "compression-zip")]
     Zip(#[from] zip::result::ZipError),
 
-    /// This error indicates that axoasset was asked to create a new remote
-    /// asset, likely by being given an path that starts with http or https.
-    /// Axoasset can only create new assets on the file system.
-    #[error("failed to create asset at {origin_path}, because {origin_path} is a remote address.")]
-    #[diagnostic(help("Axoasset cannot create remote assets; Did you mean to create a local asset? You can do so by passing a local path."))]
-    CannotCreateRemoteAsset {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-    },
-
     /// This error indicates that axoasset failed to fetch a remote asset.
     #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]
     #[diagnostic(help("Make sure the url you provided is accurate."))]
@@ -69,27 +52,6 @@ pub enum AxoassetError {
         details: reqwest::Error,
     },
 
-    /// This error indicates that axoasset failed to load a remote asset.
-    #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]
-    #[diagnostic(help("Make sure the url you provided is accurate."))]
-    RemoteAssetLoadFailed {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-        /// Details of the error
-        #[source]
-        details: Box<AxoassetError>,
-    },
-
-    /// This error indicates that axoasset was given a url that used a protocol
-    /// other than http or https, such as file://. Axoasset currently only
-    /// supports http and https.
-    #[error("remote asset url, {origin_path}, did not use http or https.")]
-    #[diagnostic(help("Please use an http or https url or a local path."))]
-    RemoteAssetPathSchemeNotSupported {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-    },
-
     /// This error indicates that the mime type of the requested remote asset
     /// was not an image.
     #[error("when fetching asset at {origin_path}, the server's response mime type did not indicate an image.")]
@@ -99,19 +61,6 @@ pub enum AxoassetError {
     RemoteAssetNonImageMimeType {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
-    },
-
-    /// This error indicates that axoasset failed to copy a remote asset.
-    #[error("failed to copy asset from {origin_path} to {dest_path}: Encountered an error copying server response body to filesystem.")]
-    #[diagnostic(help("Make sure your server is configured correctly and your destination path has the correct permissions."))]
-    RemoteAssetCopyFailed {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-        /// The path where the asset was being copied to
-        dest_path: String,
-        /// Details of the error
-        #[source]
-        details: std::io::Error,
     },
 
     /// This error indicates that the mime type of the requested remote asset
@@ -149,18 +98,6 @@ pub enum AxoassetError {
     RemoteAssetMissingContentTypeHeader {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
-    },
-
-    /// This error indicates that the provided path was determined to be for a
-    /// remote asset but could not be parsed into a valid URL.
-    #[error("could not parse asset url, {origin_path}")]
-    #[diagnostic(help("Please use an http or https url or a local path."))]
-    RemoteAssetPathParseError {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-        /// Details of the error
-        #[source]
-        details: url::ParseError,
     },
 
     /// This error indicates that axoasset failed to write a remote asset to the
