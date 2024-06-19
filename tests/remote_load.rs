@@ -41,7 +41,7 @@ async fn it_loads_remote_assets() {
         origin_path.push_str(route);
         let asset = common::client().load_asset(&origin_path).await.unwrap();
 
-        assert!(std::str::from_utf8(&asset.contents)
+        assert!(std::str::from_utf8(asset.as_bytes())
             .unwrap()
             .contains(contents));
     }

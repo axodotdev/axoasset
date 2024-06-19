@@ -19,8 +19,8 @@ async fn it_loads_local_assets() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_asset = axoasset::LocalAsset::load(origin_path).unwrap();
-        assert!(std::str::from_utf8(&loaded_asset.contents)
+        let loaded_asset = axoasset::LocalAsset::load_asset(origin_path).unwrap();
+        assert!(std::str::from_utf8(loaded_asset.as_bytes())
             .unwrap()
             .contains(contents));
     }

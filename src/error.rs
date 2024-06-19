@@ -8,6 +8,7 @@ pub type Result<T> = std::result::Result<T, AxoassetError>;
 
 /// The set of errors that can occur when axoasset is used
 #[derive(Debug, Error, Diagnostic)]
+#[non_exhaustive]
 pub enum AxoassetError {
     /// This error indicates that axoasset failed to fetch a remote asset.
     #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]

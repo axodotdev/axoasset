@@ -20,12 +20,12 @@ async fn it_copies_local_assets() {
         let asset = origin.child(file);
         asset.write_str(contents).unwrap();
 
-        LocalAsset::copy(asset.to_str().unwrap(), dest.to_str().unwrap()).unwrap();
+        LocalAsset::copy_file_to_dir(asset.to_str().unwrap(), dest.to_str().unwrap()).unwrap();
 
         let copied_file = dest_dir.join(file);
         assert!(copied_file.exists());
-        let loaded_asset = LocalAsset::load(copied_file.as_str()).unwrap();
-        assert!(std::str::from_utf8(&loaded_asset.contents)
+        let loaded_asset = LocalAsset::load_asset(copied_file.as_str()).unwrap();
+        assert!(std::str::from_utf8(loaded_asset.as_bytes())
             .unwrap()
             .contains(contents));
     }
@@ -46,12 +46,12 @@ async fn it_copies_named_local_assets() {
         asset.write_str(contents).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        axoasset::LocalAsset::copy_named(origin_path, dest_dir.join(file)).unwrap();
+        axoasset::LocalAsset::copy_file_to_file(origin_path, dest_dir.join(file)).unwrap();
 
         let copied_file = dest_dir.join(file);
         assert!(copied_file.exists());
-        let loaded_asset = axoasset::LocalAsset::load(copied_file).unwrap();
-        assert!(std::str::from_utf8(&loaded_asset.contents)
+        let loaded_asset = axoasset::LocalAsset::load_asset(copied_file).unwrap();
+        assert!(std::str::from_utf8(loaded_asset.as_bytes())
             .unwrap()
             .contains(contents));
     }
@@ -85,15 +85,15 @@ async fn it_copies_dirs() {
         }
     }
 
-    axoasset::LocalAsset::copy_dir(origin_dir, dest_dir).unwrap();
+    axoasset::LocalAsset::copy_dir_to_parent_dir(origin_dir, dest_dir).unwrap();
 
     for (file, contents) in &files {
         let copied_file = dest_dir.join("result").join(file);
 
         assert!(copied_file.exists());
         if let Some(contents) = contents {
-            let loaded_asset = axoasset::LocalAsset::load(copied_file).unwrap();
-            assert!(std::str::from_utf8(&loaded_asset.contents)
+            let loaded_asset = axoasset::LocalAsset::load_asset(copied_file).unwrap();
+            assert!(std::str::from_utf8(loaded_asset.as_bytes())
                 .unwrap()
                 .contains(contents));
         }
@@ -127,15 +127,15 @@ async fn it_copies_named_dirs() {
         }
     }
 
-    axoasset::LocalAsset::copy_dir_named(origin_dir, &dest_dir).unwrap();
+    axoasset::LocalAsset::copy_dir_to_dir(origin_dir, &dest_dir).unwrap();
 
     for (file, contents) in &files {
         let copied_file = dest_dir.join(file);
 
         assert!(copied_file.exists());
         if let Some(contents) = contents {
-            let loaded_asset = axoasset::LocalAsset::load(copied_file).unwrap();
-            assert!(std::str::from_utf8(&loaded_asset.contents)
+            let loaded_asset = axoasset::LocalAsset::load_asset(copied_file).unwrap();
+            assert!(std::str::from_utf8(loaded_asset.as_bytes())
                 .unwrap()
                 .contains(contents));
         }

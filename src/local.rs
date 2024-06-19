@@ -10,37 +10,60 @@ use crate::{dirs, error::*};
 #[derive(Debug)]
 pub struct LocalAsset {
     /// The computed filename from origin_path
-    pub filename: String,
+    filename: String,
     /// A string representing a path on the local filesystem, where the asset
     /// originated. For a new asset, this will be the path you want the asset
     /// to be written to. This path is how the filename is determined for all
     /// asset operations.
-    pub origin_path: String,
+    origin_path: Utf8PathBuf,
     /// The contents of the asset as a vector of bytes.
-    pub contents: Vec<u8>,
+    contents: Vec<u8>,
 }
 
 impl LocalAsset {
-    /// A new asset is created with a path on the local filesystem and a
-    /// vector of bytes representing its contents
+    /// Gets the filename of the LocalAsset
+    pub fn filename(&self) -> &str {
+        &self.filename
+    }
+
+    /// Gets the origin_path of the LocalAsset
+    pub fn origin_path(&self) -> &Utf8Path {
+        &self.origin_path
+    }
+
+    /// Gets the bytes of the LocalAsset
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.contents
+    }
+
+    /// Gets the bytes of the LocalAsset by-value
+    pub fn into_bytes(self) -> Vec<u8> {
+        self.contents
+    }
+
+    /// A new asset is created with claimed path on the local filesystem and a
+    /// vector of bytes representing its contents.
+    ///
+    /// Note that this DOES NOT do any IO, it just pretends the given bytes
+    /// were loaded from that location.
     pub fn new(origin_path: impl AsRef<Utf8Path>, contents: Vec<u8>) -> Result<Self> {
         let origin_path = origin_path.as_ref();
         Ok(LocalAsset {
-            filename: LocalAsset::filename(origin_path)?,
-            origin_path: origin_path.to_string(),
+            filename: filename(origin_path)?,
+            origin_path: origin_path.to_owned(),
             contents,
         })
     }
 
     /// Loads an asset from a path on the local filesystem, returning a
     /// LocalAsset struct
-    pub fn load(origin_path: impl AsRef<Utf8Path>) -> Result<LocalAsset> {
+    pub fn load_asset(origin_path: impl AsRef<Utf8Path>) -> Result<LocalAsset> {
         let origin_path = origin_path.as_ref();
         match origin_path.try_exists() {
             Ok(_) => match fs::read(origin_path) {
                 Ok(contents) => Ok(LocalAsset {
-                    filename: LocalAsset::filename(origin_path)?,
-                    origin_path: origin_path.to_string(),
+                    filename: filename(origin_path)?,
+                    origin_path: origin_path.to_owned(),
                     contents,
                 }),
                 Err(details) => Err(AxoassetError::LocalAssetReadFailed {
@@ -95,7 +118,7 @@ impl LocalAsset {
 
     /// Writes an asset to a path on the local filesystem, determines the
     /// filename from the origin path
-    pub fn write(&self, dest_dir: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
+    pub fn write_to_dir(&self, dest_dir: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let dest_dir = dest_dir.as_ref();
         let dest_path = dest_dir.join(&self.filename);
         match fs::write(&dest_path, &self.contents) {
@@ -216,19 +239,19 @@ impl LocalAsset {
     /// Copies an asset from one location on the local filesystem to the given directory
     ///
     /// The destination will use the same file name as the origin has.
-    /// If you want to specify the destination file's name, use [`LocalAsset::copy_named`][].
+    /// If you want to specify the destination file's name, use [`LocalAsset::copy_file_to_file`][].
     ///
     /// The returned path is the resulting file.
-    pub fn copy(
+    pub fn copy_file_to_dir(
         origin_path: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
     ) -> Result<Utf8PathBuf> {
         let origin_path = origin_path.as_ref();
         let dest_dir = dest_dir.as_ref();
 
-        let filename = Self::filename(origin_path)?;
+        let filename = filename(origin_path)?;
         let dest_path = dest_dir.join(filename);
-        Self::copy_named(origin_path, &dest_path)?;
+        Self::copy_file_to_file(origin_path, &dest_path)?;
 
         Ok(dest_path)
     }
@@ -236,7 +259,7 @@ impl LocalAsset {
     /// Copies an asset from one location on the local filesystem to another
     ///
     /// Both paths are assumed to be file names.
-    pub fn copy_named(
+    pub fn copy_file_to_file(
         origin_path: impl AsRef<Utf8Path>,
         dest_path: impl AsRef<Utf8Path>,
     ) -> Result<()> {
@@ -256,19 +279,19 @@ impl LocalAsset {
     ///
     /// The destination will use the same dir name as the origin has, so
     /// dest_dir is the *parent* of the copied directory. If you want to specify the destination's
-    /// dir name, use [`LocalAsset::copy_dir_named`][].
+    /// dir name, use [`LocalAsset::copy_dir_to_dir`][].
     ///
     /// The returned path is the resulting dir.
-    pub fn copy_dir(
+    pub fn copy_dir_to_parent_dir(
         origin_path: impl AsRef<Utf8Path>,
         dest_dir: impl AsRef<Utf8Path>,
     ) -> Result<Utf8PathBuf> {
         let origin_path = origin_path.as_ref();
         let dest_dir = dest_dir.as_ref();
 
-        let filename = Self::filename(origin_path)?;
+        let filename = filename(origin_path)?;
         let dest_path = dest_dir.join(filename);
-        Self::copy_dir_named(origin_path, &dest_path)?;
+        Self::copy_dir_to_dir(origin_path, &dest_path)?;
 
         Ok(dest_path)
     }
@@ -277,7 +300,7 @@ impl LocalAsset {
     ///
     /// Both paths are assumed to be the names of the directory being copied
     /// (i.e. dest_path is not the parent dir).
-    pub fn copy_dir_named(
+    pub fn copy_dir_to_dir(
         origin_path: impl AsRef<Utf8Path>,
         dest_path: impl AsRef<Utf8Path>,
     ) -> Result<()> {
@@ -294,7 +317,7 @@ impl LocalAsset {
                 LocalAsset::create_dir(to)?;
             } else if entry.file_type().is_file() {
                 // copy files
-                LocalAsset::copy_named(from, to)?;
+                LocalAsset::copy_file_to_file(from, to)?;
             } else {
                 // other kinds of file presumed to be symlinks which we don't handle
                 debug_assert!(
@@ -349,17 +372,6 @@ impl LocalAsset {
             start_dir,
             desired_filename: desired_filename.to_owned(),
         })
-    }
-
-    /// Computes filename from provided origin path
-    pub fn filename(origin_path: &Utf8Path) -> Result<String> {
-        if let Some(filename) = origin_path.file_name() {
-            Ok(filename.to_string())
-        } else {
-            Err(AxoassetError::LocalAssetMissingFilename {
-                origin_path: origin_path.to_string(),
-            })
-        }
     }
 
     /// Creates a new .tar.gz file from a provided directory
@@ -520,5 +532,16 @@ impl LocalAsset {
     #[cfg(any(feature = "compression", feature = "compression-zip"))]
     pub fn unzip_file(zipfile: impl AsRef<Utf8Path>, filename: &str) -> Result<Vec<u8>> {
         crate::compression::unzip_file(Utf8Path::new(zipfile.as_ref()), filename)
+    }
+}
+
+/// Get the filename of a path, or a pretty error
+pub fn filename(origin_path: &Utf8Path) -> Result<String> {
+    if let Some(filename) = origin_path.file_name() {
+        Ok(filename.to_string())
+    } else {
+        Err(AxoassetError::LocalAssetMissingFilename {
+            origin_path: origin_path.to_string(),
+        })
     }
 }

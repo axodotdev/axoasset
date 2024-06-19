@@ -62,13 +62,13 @@ impl SourceFile {
         }
     }
 
-    /// SourceFile equivalent of [`LocalAsset::load`][]
+    /// SourceFile equivalent of [`LocalAsset::load_asset`][]
     pub fn load_local(origin_path: impl AsRef<Utf8Path>) -> Result<SourceFile> {
         let origin_path = origin_path.as_ref();
-        let contents = LocalAsset::load_string(origin_path.as_str())?;
+        let contents = LocalAsset::load_string(origin_path)?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                filename: LocalAsset::filename(origin_path)?,
+                filename: crate::local::filename(origin_path)?,
                 origin_path: origin_path.to_string(),
                 contents,
             }),
@@ -139,6 +139,11 @@ impl SourceFile {
     }
 
     /// Get the contents of a SourceFile
+    pub fn as_str(&self) -> &str {
+        &self.inner.contents
+    }
+
+    /// Get the contents of a SourceFile (alias for as_str)
     pub fn contents(&self) -> &str {
         &self.inner.contents
     }
