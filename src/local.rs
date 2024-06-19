@@ -1,3 +1,5 @@
+//! Local file operations
+
 use std::fs;
 use std::path::{Path, PathBuf};
 

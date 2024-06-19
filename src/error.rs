@@ -1,6 +1,10 @@
+//! Axoasset Errors
+
+use crate::remote;
 use miette::Diagnostic;
 use thiserror::Error;
 
+/// Axoasset Result
 pub type Result<T> = std::result::Result<T, AxoassetError>;
 
 /// The set of errors that can occur when axoasset is used
@@ -161,13 +165,13 @@ pub enum AxoassetError {
 
     /// This error indicates that axoasset failed to write a remote asset to the
     /// local filesystem.
-    #[error("failed to write asset at {origin_path} to {dest_path}: Could not find asset at provided path.")]
+    #[error("failed to write asset at {origin_url} to {dest_path}: Could not find asset at provided path.")]
     #[diagnostic(help("Make sure your path is correct and your server is configured correctly."))]
     RemoteAssetWriteFailed {
         /// The origin path of the asset, used as an identifier
-        origin_path: String,
+        origin_url: remote::UrlString,
         /// The path where the asset was being written to
-        dest_path: String,
+        dest_path: camino::Utf8PathBuf,
         /// Details of the error
         #[source]
         details: std::io::Error,

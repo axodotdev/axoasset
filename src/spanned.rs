@@ -1,3 +1,5 @@
+//! Values with text Spans, for use with serde and miette
+
 use std::{
     borrow::Borrow,
     cmp::Ordering,

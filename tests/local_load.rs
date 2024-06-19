@@ -19,13 +19,10 @@ async fn it_loads_local_assets() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_asset = axoasset::Asset::load(origin_path).await.unwrap();
-
-        if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
-            assert!(std::str::from_utf8(&asset.contents)
-                .unwrap()
-                .contains(contents));
-        }
+        let loaded_asset = axoasset::LocalAsset::load(origin_path).unwrap();
+        assert!(std::str::from_utf8(&loaded_asset.contents)
+            .unwrap()
+            .contains(contents));
     }
 }
 
@@ -43,7 +40,7 @@ async fn it_loads_local_assets_as_bytes() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_bytes = axoasset::Asset::load_bytes(origin_path).await.unwrap();
+        let loaded_bytes = axoasset::LocalAsset::load_bytes(origin_path).unwrap();
 
         assert!(std::str::from_utf8(&loaded_bytes)
             .unwrap()
@@ -65,7 +62,7 @@ async fn it_loads_local_assets_as_strings() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_string = axoasset::Asset::load_string(origin_path).await.unwrap();
+        let loaded_string = axoasset::LocalAsset::load_string(origin_path).unwrap();
 
         assert!(loaded_string.contains(contents))
     }

@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 
 use assert_fs::prelude::*;
+use axoasset::LocalAsset;
 use camino::Utf8Path;
 
 #[tokio::test]
@@ -19,18 +20,14 @@ async fn it_copies_local_assets() {
         let asset = origin.child(file);
         asset.write_str(contents).unwrap();
 
-        axoasset::Asset::copy(asset.to_str().unwrap(), dest.to_str().unwrap())
-            .await
-            .unwrap();
+        LocalAsset::copy(asset.to_str().unwrap(), dest.to_str().unwrap()).unwrap();
 
         let copied_file = dest_dir.join(file);
         assert!(copied_file.exists());
-        let loaded_asset = axoasset::Asset::load(copied_file.as_str()).await.unwrap();
-        if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
-            assert!(std::str::from_utf8(&asset.contents)
-                .unwrap()
-                .contains(contents));
-        }
+        let loaded_asset = LocalAsset::load(copied_file.as_str()).unwrap();
+        assert!(std::str::from_utf8(&loaded_asset.contents)
+            .unwrap()
+            .contains(contents));
     }
 }
 

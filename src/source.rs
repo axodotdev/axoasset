@@ -1,3 +1,5 @@
+//! Support for parsing text with richer spanned errors
+
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -58,19 +60,6 @@ impl SourceFile {
                 contents,
             }),
         }
-    }
-
-    #[cfg(feature = "remote")]
-    /// SourceFile equivalent of [`crate::RemoteAsset::load`][]
-    pub async fn load_remote(origin_path: &str) -> Result<SourceFile> {
-        let contents = crate::RemoteAsset::load_string(origin_path).await?;
-        Ok(SourceFile {
-            inner: Arc::new(SourceFileInner {
-                filename: crate::RemoteAsset::load(origin_path).await?.filename,
-                origin_path: origin_path.to_owned(),
-                contents,
-            }),
-        })
     }
 
     /// SourceFile equivalent of [`LocalAsset::load`][]
