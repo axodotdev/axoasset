@@ -89,9 +89,18 @@ impl AxoClient {
     }
 
     /// GETs the URL and returns the raw [`reqwest::Response`][]
-    async fn get(&self, url: &UrlStr) -> Result<reqwest::Response> {
+    pub async fn get(&self, url: &UrlStr) -> Result<reqwest::Response> {
         self.client
             .get(url)
+            .send()
+            .await
+            .map_err(wrap_reqwest_err(url))
+    }
+
+    /// HEADs the URL and returns the raw [`reqwest::Response`][]
+    pub async fn head(&self, url: &UrlStr) -> Result<reqwest::Response> {
+        self.client
+            .head(url)
             .send()
             .await
             .map_err(wrap_reqwest_err(url))
