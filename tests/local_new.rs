@@ -17,19 +17,16 @@ async fn it_creates_new_assets() {
             .join(file)
             .display()
             .to_string();
-        axoasset::Asset::new(&origin_path, contents.into())
+        axoasset::LocalAsset::new(&origin_path, contents.into())
             .unwrap()
-            .write(dest.to_str().unwrap())
-            .await
+            .write_to_dir(dest.to_str().unwrap())
             .unwrap();
 
-        let loaded_asset = axoasset::Asset::load(&dest_dir).await.unwrap();
+        let loaded_asset = axoasset::LocalAsset::load_asset(&dest_dir).unwrap();
 
-        if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
-            assert!(std::str::from_utf8(&asset.contents)
-                .unwrap()
-                .contains(contents));
-        }
+        assert!(std::str::from_utf8(loaded_asset.as_bytes())
+            .unwrap()
+            .contains(contents));
     }
 }
 

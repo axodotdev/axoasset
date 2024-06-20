@@ -6,6 +6,8 @@ use std::fs;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
+mod common;
+
 #[tokio::test]
 async fn it_writes_remote_assets() {
     let mock_server = MockServer::start().await;
@@ -39,12 +41,10 @@ async fn it_writes_remote_assets() {
 
         let mut origin_path = format!("http://{}", mock_server.address());
         origin_path.push_str(route);
-        let loaded_asset = axoasset::Asset::load(&origin_path).await.unwrap();
+        let asset = common::client().load_asset(&origin_path).await.unwrap();
 
-        if let axoasset::Asset::RemoteAsset(asset) = loaded_asset {
-            let dest = asset.write(dest.to_str().unwrap()).await.unwrap();
-            assert!(dest.exists());
-            fs::read_to_string(dest).unwrap().contains(contents);
-        }
+        let dest = asset.write_to_dir(dest.to_str().unwrap()).await.unwrap();
+        assert!(dest.exists());
+        fs::read_to_string(dest).unwrap().contains(contents);
     }
 }
