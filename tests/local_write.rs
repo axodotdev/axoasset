@@ -39,18 +39,16 @@ async fn it_writes_local_assets() {
         asset.write_file(&content).unwrap();
 
         let origin_path = asset.to_str().unwrap();
-        let loaded_asset = axoasset::Asset::load(origin_path).await.unwrap();
+        let asset = axoasset::LocalAsset::load_asset(origin_path).unwrap();
 
-        if let axoasset::Asset::LocalAsset(asset) = loaded_asset {
-            asset.write(dest.to_str().unwrap()).unwrap();
-            let written_file = dest_dir.join(file);
-            assert!(written_file.exists());
-            if asset.origin_path.contains("png") {
-                let format = ImageFormat::from_path(written_file).unwrap();
-                assert_eq!(format, ImageFormat::Png);
-            } else {
-                fs::read_to_string(written_file).unwrap().contains(contents);
-            }
+        asset.write_to_dir(dest.to_str().unwrap()).unwrap();
+        let written_file = dest_dir.join(file);
+        assert!(written_file.exists());
+        if asset.origin_path().as_str().ends_with("png") {
+            let format = ImageFormat::from_path(written_file).unwrap();
+            assert_eq!(format, ImageFormat::Png);
+        } else {
+            fs::read_to_string(written_file).unwrap().contains(contents);
         }
     }
 }

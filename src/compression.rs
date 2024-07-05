@@ -4,6 +4,8 @@ use camino::Utf8Path;
 #[cfg(feature = "compression-zip")]
 use camino::Utf8PathBuf;
 
+use crate::AxoassetError;
+
 /// Internal tar-file compression algorithms
 #[cfg(feature = "compression-tar")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -57,7 +59,7 @@ pub(crate) fn tar_dir(
 
             // Add the whole dir to the tar
             if let Err(details) = tar.append_dir_all(dir_name, src_path) {
-                return Err(AxoassetError::LocalAssetArchive {
+                return Err(AxoassetError::Compression {
                     reason: format!("failed to copy directory into tar: {src_path} => {dir_name}",),
                     details,
                 });
@@ -66,7 +68,7 @@ pub(crate) fn tar_dir(
             let zip_output = match tar.into_inner() {
                 Ok(out) => out,
                 Err(details) => {
-                    return Err(AxoassetError::LocalAssetArchive {
+                    return Err(AxoassetError::Compression {
                         reason: format!("failed to write tar: {dest_path}"),
                         details,
                     })
@@ -76,7 +78,7 @@ pub(crate) fn tar_dir(
             let _zip_file = match zip_output.finish() {
                 Ok(file) => file,
                 Err(details) => {
-                    return Err(AxoassetError::LocalAssetArchive {
+                    return Err(AxoassetError::Compression {
                         reason: format!("failed to write archive: {dest_path}"),
                         details,
                     })
@@ -91,7 +93,7 @@ pub(crate) fn tar_dir(
 
             // Add the whole dir to the tar
             if let Err(details) = tar.append_dir_all(dir_name, src_path) {
-                return Err(AxoassetError::LocalAssetArchive {
+                return Err(AxoassetError::Compression {
                     reason: format!("failed to copy directory into tar: {src_path} => {dir_name}",),
                     details,
                 });
@@ -100,7 +102,7 @@ pub(crate) fn tar_dir(
             let zip_output = match tar.into_inner() {
                 Ok(out) => out,
                 Err(details) => {
-                    return Err(AxoassetError::LocalAssetArchive {
+                    return Err(AxoassetError::Compression {
                         reason: format!("failed to write tar: {dest_path}"),
                         details,
                     })
@@ -110,7 +112,7 @@ pub(crate) fn tar_dir(
             let _zip_file = match zip_output.finish() {
                 Ok(file) => file,
                 Err(details) => {
-                    return Err(AxoassetError::LocalAssetArchive {
+                    return Err(AxoassetError::Compression {
                         reason: format!("failed to write archive: {dest_path}"),
                         details,
                     })
@@ -121,7 +123,7 @@ pub(crate) fn tar_dir(
         CompressionImpl::Zstd => {
             // Wrap our file in compression
             let zip_output = ZstdEncoder::new(final_zip_file, 0).map_err(|details| {
-                AxoassetError::LocalAssetArchive {
+                AxoassetError::Compression {
                     reason: "failed to create zstd encoder".to_string(),
                     details,
                 }
@@ -132,7 +134,7 @@ pub(crate) fn tar_dir(
 
             // Add the whole dir to the tar
             if let Err(details) = tar.append_dir_all(dir_name, src_path) {
-                return Err(AxoassetError::LocalAssetArchive {
+                return Err(AxoassetError::Compression {
                     reason: format!("failed to copy directory into tar: {src_path} => {dir_name}",),
                     details,
                 });
@@ -141,7 +143,7 @@ pub(crate) fn tar_dir(
             let zip_output = match tar.into_inner() {
                 Ok(out) => out,
                 Err(details) => {
-                    return Err(AxoassetError::LocalAssetArchive {
+                    return Err(AxoassetError::Compression {
                         reason: format!("failed to write tar: {dest_path}"),
                         details,
                     })
@@ -151,7 +153,7 @@ pub(crate) fn tar_dir(
             let _zip_file = match zip_output.finish() {
                 Ok(file) => file,
                 Err(details) => {
-                    return Err(AxoassetError::LocalAssetArchive {
+                    return Err(AxoassetError::Compression {
                         reason: format!("failed to write archive: {dest_path}"),
                         details,
                     })
@@ -169,33 +171,43 @@ fn open_tarball(
     tarball: &Utf8Path,
     compression: &CompressionImpl,
 ) -> crate::error::Result<Vec<u8>> {
+    use crate::LocalAsset;
+
+    let source = LocalAsset::load_bytes(tarball)?;
+    let mut tarball_bytes = vec![];
+    decompress_tarball_bytes(&source, &mut tarball_bytes, compression)
+        .map_err(wrap_decompression_err(tarball.as_str()))?;
+
+    Ok(tarball_bytes)
+}
+
+#[cfg(feature = "compression-tar")]
+fn decompress_tarball_bytes(
+    source: &[u8],
+    tarball_bytes: &mut Vec<u8>,
+    compression: &CompressionImpl,
+) -> std::io::Result<()> {
     use std::io::Read;
 
     use flate2::read::GzDecoder;
     use xz2::read::XzDecoder;
     use zstd::stream::Decoder as ZstdDecoder;
 
-    use crate::LocalAsset;
-
-    let source = LocalAsset::load_bytes(tarball)?;
-    let mut tarball_bytes = vec![];
-
     match compression {
         CompressionImpl::Gzip => {
-            let mut decoder = GzDecoder::new(source.as_slice());
-            decoder.read_to_end(&mut tarball_bytes)?;
+            let mut decoder = GzDecoder::new(source);
+            decoder.read_to_end(tarball_bytes)?;
         }
         CompressionImpl::Xzip => {
-            let mut decoder = XzDecoder::new(source.as_slice());
-            decoder.read_to_end(&mut tarball_bytes)?;
+            let mut decoder = XzDecoder::new(source);
+            decoder.read_to_end(tarball_bytes)?;
         }
         CompressionImpl::Zstd => {
-            let mut decoder = ZstdDecoder::new(source.as_slice())?;
-            decoder.read_to_end(&mut tarball_bytes)?;
+            let mut decoder = ZstdDecoder::new(source)?;
+            decoder.read_to_end(tarball_bytes)?;
         }
-    };
-
-    Ok(tarball_bytes)
+    }
+    Ok(())
 }
 
 #[cfg(feature = "compression-tar")]
@@ -205,8 +217,10 @@ pub(crate) fn untar_all(
     compression: &CompressionImpl,
 ) -> crate::error::Result<()> {
     let tarball_bytes = open_tarball(tarball, compression)?;
-    let mut tarball = tar::Archive::new(tarball_bytes.as_slice());
-    tarball.unpack(dest_path)?;
+    let mut archive = tar::Archive::new(tarball_bytes.as_slice());
+    archive
+        .unpack(dest_path)
+        .map_err(wrap_decompression_err(tarball.as_str()))?;
 
     Ok(())
 }
@@ -217,10 +231,24 @@ pub(crate) fn untar_file(
     filename: &str,
     compression: &CompressionImpl,
 ) -> crate::error::Result<Vec<u8>> {
-    use std::io::Read;
-
     let tarball_bytes = open_tarball(tarball, compression)?;
-    let mut tarball = tar::Archive::new(tarball_bytes.as_slice());
+    let archive = tar::Archive::new(tarball_bytes.as_slice());
+    let buf = find_tarball_file_bytes(archive, filename)
+        .map_err(wrap_decompression_err(tarball.as_str()))?;
+    match buf {
+        Some(buf) => Ok(buf),
+        None => Err(crate::AxoassetError::ExtractFilenameFailed {
+            desired_filename: filename.to_owned(),
+        }),
+    }
+}
+
+#[cfg(feature = "compression-tar")]
+fn find_tarball_file_bytes(
+    mut tarball: tar::Archive<&[u8]>,
+    filename: &str,
+) -> std::io::Result<Option<Vec<u8>>> {
+    use std::io::Read;
     for entry in tarball.entries()? {
         let mut entry = entry?;
         if let Some(name) = entry.path()?.file_name() {
@@ -228,18 +256,27 @@ pub(crate) fn untar_file(
                 let mut buf = vec![];
                 entry.read_to_end(&mut buf)?;
 
-                return Ok(buf);
+                return Ok(Some(buf));
             }
         }
     }
-
-    Err(crate::AxoassetError::ExtractFilenameFailed {
-        desired_filename: filename.to_owned(),
-    })
+    Ok(None)
 }
 
 #[cfg(feature = "compression-zip")]
 pub(crate) fn zip_dir(
+    src_path: &Utf8Path,
+    dest_path: &Utf8Path,
+    with_root: Option<&Utf8Path>,
+) -> crate::error::Result<()> {
+    zip_dir_impl(src_path, dest_path, with_root).map_err(|details| AxoassetError::Compression {
+        reason: format!("failed to write zip: {}", dest_path),
+        details: details.into(),
+    })
+}
+
+#[cfg(feature = "compression-zip")]
+pub(crate) fn zip_dir_impl(
     src_path: &Utf8Path,
     dest_path: &Utf8Path,
     with_root: Option<&Utf8Path>,
@@ -311,15 +348,22 @@ pub(crate) fn zip_dir(
 
 #[cfg(feature = "compression-zip")]
 pub(crate) fn unzip_all(zipfile: &Utf8Path, dest_path: &Utf8Path) -> crate::error::Result<()> {
-    use std::io::Cursor;
-
     use crate::LocalAsset;
 
     let source = LocalAsset::load_bytes(zipfile)?;
+    unzip_all_impl(&source, dest_path).map_err(|details| AxoassetError::Decompression {
+        origin_path: zipfile.to_string(),
+        details: details.into(),
+    })
+}
+
+#[cfg(feature = "compression-zip")]
+fn unzip_all_impl(source: &[u8], dest_path: &Utf8Path) -> zip::result::ZipResult<()> {
+    use std::io::Cursor;
+
     let seekable = Cursor::new(source);
     let mut archive = zip::ZipArchive::new(seekable)?;
-    archive.extract(&dest_path)?;
-
+    archive.extract(dest_path)?;
     Ok(())
 }
 
@@ -331,16 +375,28 @@ pub(crate) fn unzip_file(zipfile: &Utf8Path, filename: &str) -> crate::error::Re
 
     let source = LocalAsset::load_bytes(zipfile)?;
     let seekable = Cursor::new(source);
-    let mut archive = zip::ZipArchive::new(seekable)?;
+    let mut archive =
+        zip::ZipArchive::new(seekable).map_err(|details| AxoassetError::Decompression {
+            origin_path: zipfile.to_string(),
+            details: details.into(),
+        })?;
     let mut file =
         archive
-            .by_name(&filename)
+            .by_name(filename)
             .map_err(|_| crate::AxoassetError::ExtractFilenameFailed {
                 desired_filename: filename.to_owned(),
             })?;
 
     let mut buf = vec![];
-    file.read_to_end(&mut buf)?;
+    file.read_to_end(&mut buf)
+        .map_err(wrap_decompression_err(zipfile.as_str()))?;
 
     Ok(buf)
+}
+
+fn wrap_decompression_err(origin_path: &str) -> impl FnOnce(std::io::Error) -> AxoassetError + '_ {
+    |details| AxoassetError::Decompression {
+        origin_path: origin_path.to_string(),
+        details,
+    }
 }

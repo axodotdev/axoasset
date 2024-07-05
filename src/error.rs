@@ -1,58 +1,15 @@
+//! Axoasset Errors
+
 use miette::Diagnostic;
 use thiserror::Error;
 
+/// Axoasset Result
 pub type Result<T> = std::result::Result<T, AxoassetError>;
 
 /// The set of errors that can occur when axoasset is used
 #[derive(Debug, Error, Diagnostic)]
+#[non_exhaustive]
 pub enum AxoassetError {
-    /// This error is a transparent error forwarded from the reqwe.
-    /// Long-term the goal is to eliminate this error variant in favor of more
-    /// specific error variants.
-    #[error(transparent)]
-    #[cfg(feature = "remote")]
-    Reqwest(#[from] reqwest::Error),
-
-    /// This error is a transparent error forwarded from the URL library. This
-    /// error indicates that the provided URL did not properly parse and may
-    /// either be invalid or an unsupported format.
-    #[error(transparent)]
-    UrlParse(#[from] url::ParseError),
-
-    /// This error is a transparent error forwarded from the reqwest library.
-    /// This error indicates that the received headers were not able to be
-    /// parsed into a string, which means they may be corrupted in some way.
-    #[error(transparent)]
-    #[cfg(feature = "remote")]
-    ReqwestHeaderParse(#[from] reqwest::header::ToStrError),
-
-    /// This error is a transparent error forwarded from the mime library.
-    /// This error indicates that the given mime type was not able to be
-    /// parsed into a string, which means it may be corrupted in some way.
-    #[error(transparent)]
-    MimeParseParse(#[from] mime::FromStrError),
-
-    /// This error is a transparent error forwarded from the flate2 library.
-    /// This error indicates that an error of some kind occurred while performing io.
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    /// This error is a transparent error forwarded from the flate2 library.
-    /// This error indicates that an error of some kind occurred while opening a ZIP file.
-    #[error(transparent)]
-    #[cfg(feature = "compression-zip")]
-    Zip(#[from] zip::result::ZipError),
-
-    /// This error indicates that axoasset was asked to create a new remote
-    /// asset, likely by being given an path that starts with http or https.
-    /// Axoasset can only create new assets on the file system.
-    #[error("failed to create asset at {origin_path}, because {origin_path} is a remote address.")]
-    #[diagnostic(help("Axoasset cannot create remote assets; Did you mean to create a local asset? You can do so by passing a local path."))]
-    CannotCreateRemoteAsset {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-    },
-
     /// This error indicates that axoasset failed to fetch a remote asset.
     #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]
     #[diagnostic(help("Make sure the url you provided is accurate."))]
@@ -65,25 +22,42 @@ pub enum AxoassetError {
         details: reqwest::Error,
     },
 
-    /// This error indicates that axoasset failed to load a remote asset.
-    #[error("failed to fetch asset at {origin_path}: Encountered an error when requesting a remote asset.")]
-    #[diagnostic(help("Make sure the url you provided is accurate."))]
-    RemoteAssetLoadFailed {
+    /// error indicates that the provided URL did not properly parse and may
+    /// either be invalid or an unsupported format.
+    #[cfg(feature = "remote")]
+    #[error("failed to parse URL {origin_path}")]
+    UrlParse {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
         /// Details of the error
         #[source]
-        details: Box<AxoassetError>,
+        details: url::ParseError,
     },
 
-    /// This error indicates that axoasset was given a url that used a protocol
-    /// other than http or https, such as file://. Axoasset currently only
-    /// supports http and https.
-    #[error("remote asset url, {origin_path}, did not use http or https.")]
-    #[diagnostic(help("Please use an http or https url or a local path."))]
-    RemoteAssetPathSchemeNotSupported {
+    /// This error indicates that the received headers were not able to be
+    /// parsed into a string, which means they may be corrupted in some way.
+    #[error("failed to parse header at {origin_path}")]
+    #[cfg(feature = "remote")]
+    HeaderParse {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
+        /// Details of the error
+        #[source]
+        details: reqwest::header::ToStrError,
+    },
+
+    /// This error indicates that the given mime type was not able to be
+    /// parsed into a string, which means it may be corrupted in some way.
+    #[error(
+        "when fetching asset at {origin_path}, the server's response mime type couldn't be parsed"
+    )]
+    #[cfg(feature = "remote")]
+    MimeParse {
+        /// The origin path of the asset, used as an identifier
+        origin_path: String,
+        /// Details of the error
+        #[source]
+        details: mime::FromStrError,
     },
 
     /// This error indicates that the mime type of the requested remote asset
@@ -92,22 +66,10 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured."
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetNonImageMimeType {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
-    },
-
-    /// This error indicates that axoasset failed to copy a remote asset.
-    #[error("failed to copy asset from {origin_path} to {dest_path}: Encountered an error copying server response body to filesystem.")]
-    #[diagnostic(help("Make sure your server is configured correctly and your destination path has the correct permissions."))]
-    RemoteAssetCopyFailed {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-        /// The path where the asset was being copied to
-        dest_path: String,
-        /// Details of the error
-        #[source]
-        details: std::io::Error,
     },
 
     /// This error indicates that the mime type of the requested remote asset
@@ -116,6 +78,7 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured"
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetMimeTypeNotSupported {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -130,6 +93,7 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured"
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetIndeterminateImageFormatExtension {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
@@ -142,32 +106,22 @@ pub enum AxoassetError {
     #[diagnostic(help(
         "Please make sure the asset url is correct and that the server is properly configured"
     ))]
+    #[cfg(feature = "remote")]
     RemoteAssetMissingContentTypeHeader {
         /// The origin path of the asset, used as an identifier
         origin_path: String,
     },
 
-    /// This error indicates that the provided path was determined to be for a
-    /// remote asset but could not be parsed into a valid URL.
-    #[error("could not parse asset url, {origin_path}")]
-    #[diagnostic(help("Please use an http or https url or a local path."))]
-    RemoteAssetPathParseError {
-        /// The origin path of the asset, used as an identifier
-        origin_path: String,
-        /// Details of the error
-        #[source]
-        details: url::ParseError,
-    },
-
     /// This error indicates that axoasset failed to write a remote asset to the
     /// local filesystem.
-    #[error("failed to write asset at {origin_path} to {dest_path}: Could not find asset at provided path.")]
+    #[error("failed to write asset at {origin_url} to {dest_path}: Could not find asset at provided path.")]
     #[diagnostic(help("Make sure your path is correct and your server is configured correctly."))]
+    #[cfg(feature = "remote")]
     RemoteAssetWriteFailed {
         /// The origin path of the asset, used as an identifier
-        origin_path: String,
+        origin_url: crate::remote::UrlString,
         /// The path where the asset was being written to
-        dest_path: String,
+        dest_path: camino::Utf8PathBuf,
         /// Details of the error
         #[source]
         details: std::io::Error,
@@ -261,9 +215,20 @@ pub enum AxoassetError {
 
     /// This error indicates we ran into an issue when creating an archive.
     #[error("failed to create archive: {reason}")]
-    LocalAssetArchive {
+    Compression {
         /// A specific step that failed
         reason: String,
+        /// Details of the error
+        #[source]
+        details: std::io::Error,
+    },
+
+    /// Some error decompressing a tarball/zip
+    #[cfg(any(feature = "compression-zip", feature = "compression-tar"))]
+    #[error("Failed to extract archive {origin_path}")]
+    Decompression {
+        /// The origin path of the asset, used as an identifier
+        origin_path: String,
         /// Details of the error
         #[source]
         details: std::io::Error,

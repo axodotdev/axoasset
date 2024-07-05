@@ -1,3 +1,5 @@
+//! Support for parsing text with richer spanned errors
+
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -60,26 +62,13 @@ impl SourceFile {
         }
     }
 
-    #[cfg(feature = "remote")]
-    /// SourceFile equivalent of [`crate::RemoteAsset::load`][]
-    pub async fn load_remote(origin_path: &str) -> Result<SourceFile> {
-        let contents = crate::RemoteAsset::load_string(origin_path).await?;
-        Ok(SourceFile {
-            inner: Arc::new(SourceFileInner {
-                filename: crate::RemoteAsset::load(origin_path).await?.filename,
-                origin_path: origin_path.to_owned(),
-                contents,
-            }),
-        })
-    }
-
-    /// SourceFile equivalent of [`LocalAsset::load`][]
+    /// SourceFile equivalent of [`LocalAsset::load_asset`][]
     pub fn load_local(origin_path: impl AsRef<Utf8Path>) -> Result<SourceFile> {
         let origin_path = origin_path.as_ref();
-        let contents = LocalAsset::load_string(origin_path.as_str())?;
+        let contents = LocalAsset::load_string(origin_path)?;
         Ok(SourceFile {
             inner: Arc::new(SourceFileInner {
-                filename: LocalAsset::filename(origin_path)?,
+                filename: crate::local::filename(origin_path)?,
                 origin_path: origin_path.to_string(),
                 contents,
             }),
@@ -150,6 +139,11 @@ impl SourceFile {
     }
 
     /// Get the contents of a SourceFile
+    pub fn as_str(&self) -> &str {
+        &self.inner.contents
+    }
+
+    /// Get the contents of a SourceFile (alias for as_str)
     pub fn contents(&self) -> &str {
         &self.inner.contents
     }
