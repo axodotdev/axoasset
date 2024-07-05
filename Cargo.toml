@@ -16,10 +16,10 @@ json-serde = ["serde_json", "serde"]
 # Enable SourceFile support for deserializing using the "toml_edit" crate
 toml-edit = ["toml_edit"]
 # Enable reqwest-based http file fetching
-remote = ["remote-min", "reqwest/rustls-tls-native-roots"]
+remote = ["reqwest", "image"]
 # On the off-chance native tls roots cause a problem, they can be opted out of
 # by only using remote-min
-remote-min = ["reqwest", "image"]
+tls-native-roots = ["reqwest/rustls-tls-native-roots"]
 # Enable support for reading and writing zips and tarballs
 compression = ["compression-tar", "compression-zip"]
 # Enable support for reading and writing tarballs
