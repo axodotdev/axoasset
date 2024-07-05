@@ -1,6 +1,17 @@
 # Changelog
 
-### v0.10.1 - 2024-06-10
+## v1.0.0 - 2024-07-05
+
+The design of APIs has been massively overhauled and normalized, with the changes too substantial to individually enumerate. Major highlights:
+
+* Asset (the union between LocalAsset and RemoteAsset) has been removed
+* RemoteAsset is largely replaced with AxoClient which to allow you to actually initialized/configure the underlying reqwest client
+* Errors cleaned up
+* Function names cleaned up to be unambiguous and normal
+* "missing" APIs added
+
+
+## v0.10.1 - 2024-06-10
 
 Fixes the `pub use reqwest` that was added in the previous version.
 
