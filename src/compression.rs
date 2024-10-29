@@ -18,6 +18,27 @@ pub(crate) enum CompressionImpl {
     Zstd,
 }
 
+lazy_static::lazy_static! {
+    static ref DEFAULT_GZ_LEVEL: u32 = {
+        std::env::var("AXOASSET_GZ_LEVEL")
+            .ok()
+            .and_then(|val| val.parse().ok())
+            .unwrap_or(6)
+    };
+    static ref DEFAULT_XZ_LEVEL: u32 = {
+        std::env::var("AXOASSET_XZ_LEVEL")
+            .ok()
+            .and_then(|val| val.parse().ok())
+            .unwrap_or(9)
+    };
+    static ref DEFAULT_ZSTD_LEVEL: i32 = {
+        std::env::var("AXOASSET_ZSTD_LEVEL")
+            .ok()
+            .and_then(|val| val.parse().ok())
+            .unwrap_or(3)
+    };
+}
+
 #[cfg(feature = "compression-tar")]
 pub(crate) fn tar_dir(
     src_path: &Utf8Path,
@@ -52,7 +73,7 @@ pub(crate) fn tar_dir(
             // Wrap our file in compression
             let zip_output = GzBuilder::new()
                 .filename(zip_contents_name)
-                .write(final_zip_file, Compression::default());
+                .write(final_zip_file, Compression::new(*DEFAULT_GZ_LEVEL));
 
             // Write the tar to the compression stream
             let mut tar = tar::Builder::new(zip_output);
@@ -87,7 +108,7 @@ pub(crate) fn tar_dir(
             // Drop the file to close it
         }
         CompressionImpl::Xzip => {
-            let zip_output = XzEncoder::new(final_zip_file, 9);
+            let zip_output = XzEncoder::new(final_zip_file, *DEFAULT_XZ_LEVEL);
             // Write the tar to the compression stream
             let mut tar = tar::Builder::new(zip_output);
 
@@ -122,12 +143,13 @@ pub(crate) fn tar_dir(
         }
         CompressionImpl::Zstd => {
             // Wrap our file in compression
-            let zip_output = ZstdEncoder::new(final_zip_file, 0).map_err(|details| {
-                AxoassetError::Compression {
-                    reason: "failed to create zstd encoder".to_string(),
-                    details,
-                }
-            })?;
+            let zip_output =
+                ZstdEncoder::new(final_zip_file, *DEFAULT_ZSTD_LEVEL).map_err(|details| {
+                    AxoassetError::Compression {
+                        reason: "failed to create zstd encoder".to_string(),
+                        details,
+                    }
+                })?;
 
             // Write the tar to the compression stream
             let mut tar = tar::Builder::new(zip_output);
