@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.0.1 - 2024-10-30
+
+The primary feature of this release is adding some internal-for-now environment variables that allow the end user to change the level of compression at runtime.
+The primary motivator of this is improving the speed of testing dist. [PR/212]
+
+This release also includes some general dependency updates.
+
+[PR/212]: https://github.com/axodotdev/axoasset/pull/212
+
 ## v1.0.0 - 2024-07-05
 
 The design of APIs has been massively overhauled and normalized, with the changes too substantial to individually enumerate. Major highlights:
