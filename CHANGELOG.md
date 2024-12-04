@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.0 - 2024-12-04
+
+This release adds support for deserializing YAML in the same way as TOML. [PR/235]
+
+[PR/235]: https://github.com/axodotdev/axoasset/pull/235
+
 ## v1.0.1 - 2024-10-30
 
 The primary feature of this release is adding some internal-for-now environment variables that allow the end user to change the level of compression at runtime.
