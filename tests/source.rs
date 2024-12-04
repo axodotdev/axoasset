@@ -198,3 +198,53 @@ goodbye =
         panic!("span was invalid");
     };
 }
+
+#[test]
+#[cfg(feature = "yaml-serde")]
+fn yaml_valid() {
+    #[derive(serde::Deserialize, PartialEq, Eq, Debug)]
+    struct MyType {
+        hello: String,
+        goodbye: bool,
+    }
+
+    // Make the file
+    let contents = String::from(
+        r##"
+hello: "there"
+goodbye: true
+"##,
+    );
+    let source = axoasset::SourceFile::new("file.yaml", contents);
+
+    let res = source.deserialize_yaml::<MyType>().unwrap();
+    assert_eq!(res.hello, "there");
+    assert_eq!(res.goodbye, true);
+}
+
+#[test]
+#[cfg(feature = "yaml-serde")]
+fn yaml_invalid() {
+    use axoasset::AxoassetError;
+
+    #[derive(serde::Deserialize, PartialEq, Eq, Debug)]
+    struct MyType {
+        hello: String,
+        goodbye: bool,
+    }
+
+    // Make the file
+    let contents = String::from(
+        r##"
+hello: "there"
+goodbye: "this shouldn't be a string"
+"##,
+    );
+    let source = axoasset::SourceFile::new("file.yml", contents);
+
+    let res = source.deserialize_yaml::<MyType>();
+    assert!(res.is_err());
+    let Err(AxoassetError::Yaml { span: Some(_), .. }) = res else {
+        panic!("span was invalid");
+    };
+}

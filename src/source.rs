@@ -14,6 +14,9 @@ use crate::toml_edit::DocumentMut;
 #[cfg(feature = "json-serde")]
 use crate::serde_json;
 
+#[cfg(feature = "yaml-serde")]
+use crate::serde_yml;
+
 /// The inner contents of a [`SourceFile`][].
 #[derive(Eq, PartialEq)]
 struct SourceFileInner {
@@ -126,6 +129,22 @@ impl SourceFile {
             }
         })?;
         Ok(toml)
+    }
+
+    /// Try to deserialize the contents of the SourceFile as yaml
+    #[cfg(feature = "yaml-serde")]
+    pub fn deserialize_yaml<'a, T: for<'de> serde::Deserialize<'de>>(&self) -> Result<T> {
+        let yaml = serde_yml::from_str(self.contents()).map_err(|details| {
+            let span = details
+                .location()
+                .and_then(|location| self.span_for_line_col(location.line(), location.column()));
+            AxoassetError::Yaml {
+                source: self.clone(),
+                span,
+                details,
+            }
+        })?;
+        Ok(yaml)
     }
 
     /// Get the filename of a SourceFile
