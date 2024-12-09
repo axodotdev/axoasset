@@ -39,7 +39,7 @@ miette = "7.0.0"
 camino = "1.1.9"
 toml = { version = "0.8.12", optional = true }
 serde_json = { version = "1.0.132", optional = true }
-serde_yml = { version = "0.0.10", optional = true }
+serde_yml = { version = "0.0.11", optional = true }
 serde = { version = "1.0.214", optional = true, features = ["derive"] }
 tar = { version = "0.4.42", optional = true }
 zip = { version = "0.6.4", optional = true }
