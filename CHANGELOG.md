@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.0 - 2024-12-09
+
+This release just updates dependencies.
+
 ## v1.1.0 - 2024-12-04
 
 This release adds support for deserializing YAML in the same way as TOML. [PR/235]
