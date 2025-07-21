@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0 - 2025-07-20
+
+This release just updates dependencies.
+
 ## v1.2.0 - 2024-12-09
 
 This release just updates dependencies.
