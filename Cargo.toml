@@ -54,4 +54,4 @@ lazy_static = "1.5.0"
 assert_fs = "1"
 tokio = {version = "1.45", features = ["macros"]}
 wiremock = "0.6"
-clap = { version = "4.5.41", features = ["derive"] }
+clap = { version = "4.5.45", features = ["derive"] }
