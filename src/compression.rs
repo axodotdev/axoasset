@@ -3,6 +3,9 @@
 use camino::Utf8Path;
 #[cfg(feature = "compression-zip")]
 use camino::Utf8PathBuf;
+#[cfg(feature = "compression-zip")]
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 use crate::AxoassetError;
 
@@ -352,6 +355,11 @@ pub(crate) fn zip_dir_impl(
         // Write file or directory explicitly
         // Some unzip tools unzip files with directory paths correctly, some do not!
         if path.is_file() {
+            // On Unix, we want to make sure we preserve permissions
+            // (like the execute bit!) from the source file
+            #[cfg(unix)]
+            let options = options.unix_permissions(path.metadata()?.permissions().mode());
+
             zip.start_file(&unix_name, options)?;
             let mut f = File::open(path)?;
 
