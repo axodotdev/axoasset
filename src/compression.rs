@@ -310,7 +310,7 @@ pub(crate) fn zip_dir_impl(
         fs::File,
         io::{Read, Write},
     };
-    use zip::{write::FileOptions, CompressionMethod};
+    use zip::{write::SimpleFileOptions, CompressionMethod};
 
     let file = File::create(dest_path)?;
 
@@ -321,7 +321,7 @@ pub(crate) fn zip_dir_impl(
     let it = walkdir.into_iter();
 
     let mut zip = zip::ZipWriter::new(file);
-    let options = FileOptions::default().compression_method(CompressionMethod::Deflated);
+    let options = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
 
     // If there's a root prefix, add entries for all of its components
     if let Some(root) = with_root {
