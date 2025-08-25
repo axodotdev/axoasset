@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.4.0 - 2025-08-25
+
+### 🛠️ Fixes
+
+ZIP compression now correctly preserves Unix permissions, including execute. [PR/311]
+
+### 🎁 Features
+
+ZIP files now use DEFLATE compression. Previous versions produced uncompressed ZIP files. [PR/312]
+
+[PR/331]: https://github.com/axodotdev/axoasset/pull/311
+[PR/312]: https://github.com/axodotdev/axoasset/pull/312
+
+### Maintenace
+
+Updated dependencies.
+
 ## v1.3.0 - 2025-07-20
 
 This release just updates dependencies.
