@@ -10,7 +10,7 @@ ZIP compression now correctly preserves Unix permissions, including execute. [PR
 
 ZIP files now use DEFLATE compression. Previous versions produced uncompressed ZIP files. [PR/312]
 
-[PR/331]: https://github.com/axodotdev/axoasset/pull/311
+[PR/311]: https://github.com/axodotdev/axoasset/pull/311
 [PR/312]: https://github.com/axodotdev/axoasset/pull/312
 
 ### Maintenace
