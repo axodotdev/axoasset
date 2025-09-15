@@ -152,7 +152,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "serde_yml",
+ "serde_yaml_bw",
  "tar",
  "thiserror",
  "tokio",
@@ -1102,12 +1102,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
 
 [[package]]
-name = "libyml"
-version = "0.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64804cc6a5042d4f05379909ba25b503ec04e2c082151d62122d5dcaa274b961"
-
-[[package]]
 name = "libz-rs-sys"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1737,20 +1731,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_yml"
-version = "0.0.11"
+name = "serde_yaml_bw"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48e76bab63c3fd98d27c17f9cbce177f64a91f5e69ac04cafe04e1bb25d1dc3c"
+checksum = "63ed195fcc89460a39a785602f5e486cb9b97365634e43692b9af27e12bf841b"
 dependencies = [
+ "base64",
  "indexmap",
  "itoa",
- "libyml",
- "log",
- "memchr",
  "ryu",
  "serde",
- "serde_json",
- "tempfile",
+ "unsafe-libyaml",
 ]
 
 [[package]]
@@ -2155,6 +2146,12 @@ name = "unicode-width"
 version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e51733f11c9c4f72aa0c160008246859e340b00807569a0da0e7a1079b27ba85"
+
+[[package]]
+name = "unsafe-libyaml"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
 
 [[package]]
 name = "untrusted"

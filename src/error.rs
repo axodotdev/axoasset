@@ -345,6 +345,6 @@ pub enum AxoassetError {
         span: Option<miette::SourceSpan>,
         /// Details of the error
         #[source]
-        details: serde_yml::Error,
+        details: serde_yaml_bw::Error,
     },
 }
