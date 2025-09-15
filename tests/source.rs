@@ -225,8 +225,6 @@ goodbye: true
 #[test]
 #[cfg(feature = "yaml-serde")]
 fn yaml_invalid() {
-    use axoasset::AxoassetError;
-
     #[derive(serde::Deserialize, PartialEq, Eq, Debug)]
     struct MyType {
         hello: String,
@@ -243,8 +241,9 @@ goodbye: "this shouldn't be a string"
     let source = axoasset::SourceFile::new("file.yml", contents);
 
     let res = source.deserialize_yaml::<MyType>();
+    // In a previous version, we had an assertion that the span
+    // was filled out here. Unfortunately, the span isn't always
+    // available in the yaml library we had to switch to;
+    // investigate other options in the future.
     assert!(res.is_err());
-    let Err(AxoassetError::Yaml { span: Some(_), .. }) = res else {
-        panic!("span was invalid");
-    };
 }

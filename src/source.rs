@@ -15,7 +15,7 @@ use crate::toml_edit::DocumentMut;
 use crate::serde_json;
 
 #[cfg(feature = "yaml-serde")]
-use crate::serde_yml;
+use crate::serde_yaml_bw;
 
 /// The inner contents of a [`SourceFile`][].
 #[derive(Eq, PartialEq)]
@@ -134,7 +134,7 @@ impl SourceFile {
     /// Try to deserialize the contents of the SourceFile as yaml
     #[cfg(feature = "yaml-serde")]
     pub fn deserialize_yaml<'a, T: for<'de> serde::Deserialize<'de>>(&self) -> Result<T> {
-        let yaml = serde_yml::from_str(self.contents()).map_err(|details| {
+        let yaml = serde_yaml_bw::from_str(self.contents()).map_err(|details| {
             let span = details
                 .location()
                 .and_then(|location| self.span_for_line_col(location.line(), location.column()));
