@@ -30,7 +30,7 @@ pub use reqwest;
 #[cfg(feature = "json-serde")]
 pub use serde_json;
 #[cfg(feature = "yaml-serde")]
-pub use serde_yaml_bw;
+pub use serde_saphyr;
 pub use source::SourceFile;
 pub use spanned::Spanned;
 #[cfg(feature = "toml-serde")]
