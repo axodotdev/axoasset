@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.5.0 - 2025-12-30
+
+### ⚠️ Breaking changes
+
+This release replaces the discontinued [serde_yml](https://crates.io/crates/serde_yml) with [serde_yaml_bw](https://crates.io/crates/serde_yaml_bw).
+
 ## v1.4.0 - 2025-08-25
 
 ### 🛠️ Fixes
