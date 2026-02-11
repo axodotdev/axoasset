@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.0
+
+### ⚠️ Breaking changes
+
+Update reqwest to 0.13, and consequently remove the `tls-native-roots` feature.
+
 ## v1.5.0 - 2025-12-30
 
 ### ⚠️ Breaking changes
