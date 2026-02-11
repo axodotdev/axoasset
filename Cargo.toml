@@ -42,7 +42,7 @@ serde_json = { version = "1.0.132", optional = true }
 serde_yaml_bw = { version = "2.4.0", optional = true }
 serde = { version = "1.0.214", optional = true, features = ["derive"] }
 tar = { version = "0.4.42", optional = true }
-zip = { version = "7.4.0", optional = true, default-features = false, features = ["aes-crypto", "bzip2", "deflate", "time", "zstd"] }
+zip = { version = "7.0.0", optional = true, default-features = false, features = ["aes-crypto", "bzip2", "deflate", "time", "zstd"] }
 flate2 = { version = "1.0.34", optional = true }
 xz2 = { version = "0.1.7", optional = true, features = ["static"] }
 zstd = { version = "0.13.0", optional = true }
