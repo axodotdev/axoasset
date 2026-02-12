@@ -174,7 +174,7 @@ goodbye = true
     // Get the span for a non-substring (string literal isn't pointing into the String)
     let val = source.deserialize_toml_edit().unwrap();
     assert_eq!(val["hello"].as_str().unwrap(), "there");
-    assert_eq!(val["goodbye"].as_bool().unwrap(), true);
+    assert!(val["goodbye"].as_bool().unwrap());
 }
 
 #[cfg(feature = "toml-edit")]
@@ -219,7 +219,7 @@ goodbye: true
 
     let res = source.deserialize_yaml::<MyType>().unwrap();
     assert_eq!(res.hello, "there");
-    assert_eq!(res.goodbye, true);
+    assert!(res.goodbye);
 }
 
 #[test]

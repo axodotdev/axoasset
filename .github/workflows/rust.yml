@@ -15,11 +15,11 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: dtolnay/rust-toolchain@stable
-    - name: Run cargo check
-      run: |
-        cargo check --all --tests
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run cargo check
+        run: |
+          cargo check --all --tests
   fmt:
     runs-on: ubuntu-latest
     steps:
@@ -39,7 +39,7 @@ jobs:
           components: clippy
       - name: Run cargo clippy
         run: |
-          cargo clippy --tests --examples
+          cargo clippy --all-features --all-targets --examples
   docs:
     runs-on: ubuntu-latest
     env:
