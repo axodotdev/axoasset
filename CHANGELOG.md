@@ -1,10 +1,16 @@
 # Changelog
 
+## v2.0.1
+
+Fixes an issue in 2.0.0 where reqwest was inadvertently built without TLS support.
+
 ## v2.0.0
+
+This release updates several dependencies.
 
 ### ⚠️ Breaking changes
 
-Update reqwest to 0.13, and consequently remove the `tls-native-roots` feature. Also updates other dependencies.
+Update reqwest to 0.13, and consequently remove the `tls-native-roots` feature.
 
 ## v1.5.0 - 2025-12-30
 
