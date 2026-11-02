@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.2
+
+Updates dependencies, including a bump to zip v9.
+
 ## v2.0.1
 
 Fixes an issue in 2.0.0 where reqwest was inadvertently built without TLS support.
