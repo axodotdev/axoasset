@@ -159,7 +159,6 @@ dependencies = [
  "clap",
  "flate2",
  "image",
- "lazy_static",
  "miette",
  "mime",
  "reqwest",

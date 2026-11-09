@@ -6,6 +6,8 @@ use camino::Utf8PathBuf;
 #[cfg(feature = "compression-zip")]
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
+#[cfg(feature = "compression-tar")]
+use std::sync::LazyLock;
 
 use crate::AxoassetError;
 
@@ -21,26 +23,27 @@ pub(crate) enum CompressionImpl {
     Zstd,
 }
 
-lazy_static::lazy_static! {
-    static ref DEFAULT_GZ_LEVEL: u32 = {
-        std::env::var("AXOASSET_GZ_LEVEL")
-            .ok()
-            .and_then(|val| val.parse().ok())
-            .unwrap_or(6)
-    };
-    static ref DEFAULT_XZ_LEVEL: u32 = {
-        std::env::var("AXOASSET_XZ_LEVEL")
-            .ok()
-            .and_then(|val| val.parse().ok())
-            .unwrap_or(9)
-    };
-    static ref DEFAULT_ZSTD_LEVEL: i32 = {
-        std::env::var("AXOASSET_ZSTD_LEVEL")
-            .ok()
-            .and_then(|val| val.parse().ok())
-            .unwrap_or(3)
-    };
-}
+#[cfg(feature = "compression-tar")]
+static DEFAULT_GZ_LEVEL: LazyLock<u32> = LazyLock::new(|| {
+    std::env::var("AXOASSET_GZ_LEVEL")
+        .ok()
+        .and_then(|val| val.parse().ok())
+        .unwrap_or(6)
+});
+#[cfg(feature = "compression-tar")]
+static DEFAULT_XZ_LEVEL: LazyLock<u32> = LazyLock::new(|| {
+    std::env::var("AXOASSET_XZ_LEVEL")
+        .ok()
+        .and_then(|val| val.parse().ok())
+        .unwrap_or(9)
+});
+#[cfg(feature = "compression-tar")]
+static DEFAULT_ZSTD_LEVEL: LazyLock<i32> = LazyLock::new(|| {
+    std::env::var("AXOASSET_ZSTD_LEVEL")
+        .ok()
+        .and_then(|val| val.parse().ok())
+        .unwrap_or(3)
+});
 
 #[cfg(feature = "compression-tar")]
 pub(crate) fn tar_dir(
